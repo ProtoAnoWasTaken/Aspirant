@@ -4,4 +4,8 @@
 This mod was fully scripted by [ProtoAno](https://github.com/ProtoAnoWasTaken) (ProtoAnoWasTaken), and basically fully illustrated (AND MODELED) by [Faow](https://github.com/faowfanatic-cell) (Faowbot). Conceptualization for mod content largely comes from both, with the occasional community submission.
 
 ## FAQ
-If or when this mod becomes popular enough to warrant frequent questioning that hasn't already been answered by the prior spiel, this section will be populated by your quandaries.
+> **Does this mod have any dependencies?**
+>> This mod currently requires [Steamodded](https://github.com/Steamodded/smods/), and probably will forever.
+
+> **How much content is currently in the mod?**
+>> As of v1.1, ASPIRANT has 50 jokers, 6 vouchers, 5 boss blinds, 3 decks, 1 spectral card, and 1 seal. It also features 10 achievements for those of you who don't press the Unlock All button, and a "Creative Mode" deck that can be enabled in the config.
