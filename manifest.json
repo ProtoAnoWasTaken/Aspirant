@@ -1,0 +1,21 @@
+{
+	"id": "Aspirant",
+	"name": "Aspirant",
+	"author": ["ProtoAno, Faowbot"],
+	"description": "An expansion of Balatro utilizing the aesthetics and concepts of Termiteking9's Gears.",
+	"prefix": "tk9g",
+	"main_file": "main.lua",
+	"priority": 52115389,
+	"badge_colour": "B1AB70",
+	"badge_text_colour": "FFFFFF",
+	"display_name": "Aspirant",
+	"dependencies": [
+		"Steamodded (>=1.0.0~BETA-1620a)"
+	],
+	"version": "1.1.0",
+	"conflicts": [
+	], 
+	"provides": [
+	], 
+	"dump_loc": false
+}
