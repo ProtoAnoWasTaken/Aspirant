@@ -56,7 +56,7 @@ SMODS.current_mod.config_tab = function()
             config = { align = "cm", padding = 0.02 },
             nodes = {
                 create_toggle({
-                    label = "Enable music replacement Joker properties",
+                    label = "Enable Joker music replacement",
                     ref_table = AG_CONFIG,
                     ref_value = "vinyl_music",
                 }),

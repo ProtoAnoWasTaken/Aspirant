@@ -9,10 +9,34 @@ local AG_GUARD = rawget(_G, 'Aspirant') or {}
 AG_GUARD.guard_blind = AG_GUARD.guard_blind or {}
 
 local CUSTOM_BOSS_KEYS = {
+    'bl_tk9g_collector',
+    'bl_tk9g_factory',
     'bl_tk9g_doctor',
     'bl_tk9g_guard',
     'bl_tk9g_killer',
 }
+
+local CUSTOM_BOSS_KEY_SET = {
+    bl_tk9g_collector = true,
+    bl_tk9g_doctor = true,
+    bl_tk9g_factory = true,
+    bl_tk9g_guard = true,
+    bl_tk9g_killer = true,
+    collector = true,
+    doctor = true,
+    factory = true,
+    guard = true,
+    killer = true,
+}
+
+function AG_GUARD.is_showdown_ante()
+    local ante = G and G.GAME and G.GAME.round_resets and G.GAME.round_resets.ante
+    return type(ante) == 'number' and ante >= 8 and ante % 8 == 0
+end
+
+local function custom_bosses_allowed_in_pool()
+    return not AG_GUARD.is_showdown_ante()
+end
 
 local function ensure_custom_boss_usage_entries(game)
     local current_game = game or (G and G.GAME) or nil
@@ -130,7 +154,31 @@ if not AG_GUARD.guard_blind.boss_usage_hook_installed then
 
         function get_new_boss(...)
             ensure_custom_boss_usage_entries()
-            return ag_guard_get_new_boss_ref(...)
+
+            if not AG_GUARD.is_showdown_ante() then
+                return ag_guard_get_new_boss_ref(...)
+            end
+
+            local bosses_used = G and G.GAME and G.GAME.bosses_used
+            if not bosses_used then
+                return ag_guard_get_new_boss_ref(...)
+            end
+
+            local saved = {}
+            for blind_key in pairs(CUSTOM_BOSS_KEY_SET) do
+                if type(blind_key) == 'string' and blind_key:match('^bl_') then
+                    saved[blind_key] = bosses_used[blind_key]
+                    bosses_used[blind_key] = 999
+                end
+            end
+
+            local replacement_key = ag_guard_get_new_boss_ref(...)
+
+            for blind_key, previous_value in pairs(saved) do
+                bosses_used[blind_key] = previous_value
+            end
+
+            return replacement_key
         end
     end
 end
@@ -173,6 +221,7 @@ SMODS.Blind({
     dollars = 5,
     mult = 2.5,
     debuff = {},
+    in_pool = custom_bosses_allowed_in_pool,
 
     loc_txt = {
         name = 'The Guard',

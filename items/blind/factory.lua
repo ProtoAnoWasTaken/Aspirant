@@ -49,6 +49,9 @@ SMODS.Blind({
     boss_colour = HEX('aa70eb'),
     debuff = {},
     config = { extra = { bonus_chips = 0 } },
+    in_pool = function()
+        return not (Aspirant and Aspirant.is_showdown_ante and Aspirant.is_showdown_ante())
+    end,
 
     loc_txt = {
         name = 'The Factory',

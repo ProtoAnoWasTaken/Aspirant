@@ -97,6 +97,9 @@ SMODS.Blind({
     dollars = 5,
     mult = 1.75,
     debuff = {},
+    in_pool = function()
+        return not (Aspirant and Aspirant.is_showdown_ante and Aspirant.is_showdown_ante())
+    end,
 
     loc_txt = {
         name = 'The Killer',

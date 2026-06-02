@@ -163,11 +163,28 @@ local function create_readied_erbario()
         return false
     end
 
-    local erbario = create_card('Joker', G.jokers, nil, nil, true, nil, erbario_center.key, 'ag_mandragora')
+    local erbario = nil
+    if SMODS and SMODS.add_card then
+        erbario = SMODS.add_card({
+            key = erbario_center.key,
+            area = G.jokers,
+            no_edition = true,
+            bypass_discovery_center = true,
+            allow_duplicates = true,
+        })
+    else
+        erbario = create_card('Joker', G.jokers, nil, nil, true, nil, erbario_center.key, 'ag_mandragora')
 
-    erbario:add_to_deck()
-    G.jokers:emplace(erbario)
-    erbario:start_materialize()
+        if erbario then
+            erbario:add_to_deck()
+            G.jokers:emplace(erbario)
+            erbario:start_materialize()
+        end
+    end
+
+    if not erbario then
+        return false
+    end
 
     local extra = erbario.ability and erbario.ability.extra
     if extra then
