@@ -57,6 +57,13 @@ local loc = {
                     "precursor first",
                 }
             },
+            ag_unlock_cherry_bomb_self_destructed = {
+                name = "Locked",
+                text = {
+                    "Unlock by having",
+                    "{C:attention}Cherry Bomb{} self-destruct",
+                }
+            },
             ag_proposed_card = {
                 name = "Proposed Card",
                 text = {

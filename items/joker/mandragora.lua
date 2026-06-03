@@ -148,6 +148,11 @@ local function get_extra(card)
     return AG_UTIL.get_extra and AG_UTIL.get_extra(card) or nil
 end
 
+local function mandragora_is_unlocked()
+    local center = find_center_by_suffix('mandragora')
+    return center and center.unlocked or false
+end
+
 local function has_joker_room()
     return G
         and G.jokers
@@ -277,7 +282,15 @@ SMODS.Joker({
     perishable_compat = true,
 
     locked_loc_vars = function()
-        return { key = 'joker_locked_legendary', set = 'Other' }
+        return { key = 'ag_unlock_cherry_bomb_self_destructed', set = 'Other' }
+    end,
+
+    check_for_unlock = function(self, args)
+        return args and args.type == 'ag_cherry_bomb_self_destructed'
+    end,
+
+    in_pool = function(self, args)
+        return mandragora_is_unlocked()
     end,
 
     calculate = function(self, card, context)

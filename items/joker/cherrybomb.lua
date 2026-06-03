@@ -5,6 +5,11 @@ SMODS.Atlas({
     py = 93,
 })
 
+Aspirant = rawget(_G, "Aspirant") or {}
+
+local AG = Aspirant
+local AG_UTIL = AG.joker_utils or {}
+
 local function get_chips(card)
     return (card.ability and card.ability.extra and card.ability.extra.chips) or 0
 end
@@ -13,7 +18,66 @@ local function get_gain(card)
     return (card.ability and card.ability.extra and card.ability.extra.gain) or 76
 end
 
+local function to_plain_number(value)
+    if type(value) == "number" then
+        return value
+    end
+
+    if type(to_number) == "function" then
+        local success, converted = pcall(to_number, value)
+        if success and type(converted) == "number" then
+            return converted
+        end
+    end
+
+    return nil
+end
+
+local function score_caught_fire(score_intensity)
+    if not score_intensity then
+        return false
+    end
+
+    local flames = to_plain_number(score_intensity.flames)
+    if flames and flames > 0 then
+        return true
+    end
+
+    local earned_score = to_plain_number(score_intensity.earned_score)
+    local required_score = to_plain_number(score_intensity.required_score)
+
+    return required_score and earned_score and required_score > 0 and earned_score >= required_score
+end
+
+local function is_radicles_discovered()
+    return AG_UTIL.is_center_discovered
+        and AG_UTIL.is_center_discovered("Joker", "radicles")
+        or false
+end
+
+local function unlock_mandragora()
+    if G and G.GAME then
+        G.GAME.ag_cherry_bomb_self_destructed = true
+    end
+
+    if check_for_unlock then
+        check_for_unlock({ type = "ag_cherry_bomb_self_destructed" })
+    end
+end
+
 local function destroy_cherry_bomb(card)
+    unlock_mandragora()
+
+    if AG_UTIL.destroy_card then
+        AG_UTIL.destroy_card(card, {
+            colours = { G.C.RED },
+            self_destruct = true,
+            source_card = card,
+            time = 1.6,
+        })
+        return
+    end
+
     card.getting_sliced = true
 
     G.E_MANAGER:add_event(Event({
@@ -71,7 +135,11 @@ SMODS.Joker({
     perishable_compat = true,
 
     locked_loc_vars = function()
-        return { key = "ag_locked_joker", set = "Other" }
+        return { key = "ag_unlock_discover_radicles", set = "Other" }
+    end,
+
+    check_for_unlock = function(self, args)
+        return args and args.type == "discover_amount" and is_radicles_discovered()
     end,
 
     calculate = function(self, card, context)
@@ -89,10 +157,8 @@ SMODS.Joker({
                     end
 
                     local score_intensity = G.ARGS and G.ARGS.score_intensity
-                    local earned_score = score_intensity and score_intensity.earned_score or 0
-                    local required_score = score_intensity and score_intensity.required_score or 0
 
-                    if required_score > 0 and earned_score >= required_score and not card.ability.extra.triggered_this_hand then
+                    if score_caught_fire(score_intensity) and not card.ability.extra.triggered_this_hand then
                         card.ability.extra.triggered_this_hand = true
                         card.ability.extra.chips = get_chips(card) + get_gain(card)
 
