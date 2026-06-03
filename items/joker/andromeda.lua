@@ -103,6 +103,62 @@ local function get_visible_hands()
     return hands
 end
 
+local function get_scoring_parameters()
+    local parameters = SMODS
+        and SMODS.Scoring_Parameter
+        and SMODS.Scoring_Parameter.obj_buffer
+
+    return type(parameters) == 'table' and parameters or { 'chips', 'mult' }
+end
+
+local function upgrade_hand_direct(card, hand_name, amount)
+    local hand = G.GAME and G.GAME.hands and G.GAME.hands[hand_name]
+
+    if not hand then
+        return
+    end
+
+    local context = {
+        card = card,
+        poker_hand_changed = true,
+        scoring_name = hand_name,
+        old_parameters = {},
+        new_parameters = {},
+        old_level = hand.level,
+    }
+
+    for _, parameter in ipairs(get_scoring_parameters()) do
+        if hand[parameter] then
+            context.old_parameters[parameter] = hand[parameter]
+            hand[parameter] = hand[parameter] + ((hand['l_' .. parameter] or 0) * amount)
+            context.new_parameters[parameter] = hand[parameter]
+        end
+    end
+
+    hand.level = hand.level + amount
+    context.new_level = hand.level
+
+    if SMODS and SMODS.calculate_context then
+        SMODS.calculate_context(context)
+    end
+
+    if G and G.E_MANAGER and Event and check_for_unlock then
+        G.E_MANAGER:add_event(Event({
+            trigger = 'immediate',
+            func = function()
+                check_for_unlock({ type = 'upgrade_hand', hand = hand_name, level = hand.level })
+                return true
+            end,
+        }))
+    end
+end
+
+local function upgrade_visible_hands(card)
+    for _, hand_name in ipairs(get_visible_hands()) do
+        upgrade_hand_direct(card, hand_name, 2)
+    end
+end
+
 local function grant_bonus_chips(bonus_chips)
     if bonus_chips <= 0 then
         return
@@ -128,14 +184,7 @@ local function trigger_supernova(card)
     end
 
     grant_bonus_chips(bonus_chips)
-
-    SMODS.upgrade_poker_hands({
-        hands = get_visible_hands(),
-        level_up = 2,
-        from = card,
-        instant = true,
-        StatusText = false,
-    })
+    upgrade_visible_hands(card)
 
     if AG.unlock_through_solid_ground then
         AG.unlock_through_solid_ground()

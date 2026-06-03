@@ -92,6 +92,20 @@ local loc = {
                     "{C:attention}Sunken Below{}",
                 }
             },
+            ag_unlock_timebuilder_deck = {
+                name = "Locked",
+                unlock = {
+                    "Unlock by discovering",
+                    "{C:attention}Starlight Obelisk{}",
+                }
+            },
+            ag_unlock_lemurian_deck = {
+                name = "Locked",
+                unlock = {
+                    "Unlock by discovering",
+                    "{C:attention}Weithiwr Haearn{}",
+                }
+            },
             pinned_sticker = {
                 name = "Suspended Motion",
                 text = {
@@ -113,16 +127,43 @@ local loc = {
             }
         },
         Back = {
+            b_tk9g_timebuilder_deck = {
+                name = "Timebuilder's Deck",
+                text = {
+                    "{C:red}-1{} hand",
+                    "Start with a {C:spectral}Cryptid{} card",
+                    "{C:attention}5{} cards in deck have a",
+                    "{C:starlight,T:starlight_seal}Starlight Seal{}",
+                    "Defeating a {C:attention}Boss Blind{}",
+                    "adds {C:attention}2{} more Seals",
+                },
+                unlock = {
+                    "Unlock by discovering",
+                    "{C:attention}Starlight Obelisk{}",
+                }
+            },
+            b_tk9g_lemurian_deck = {
+                name = "Lemurian Deck",
+                text = {
+                    "Start run with 52 {C:diamonds}Diamonds{}",
+                    "in deck and the",
+                    "{C:attention}Metalworker{}",
+                },
+                unlock = {
+                    "Unlock by discovering",
+                    "{C:attention}Weithiwr Haearn{}",
+                }
+            },
             ag_unlock_timebuilder_deck = {
                 name = "Locked",
-                text = {
+                unlock = {
                     "Unlock by discovering",
-                    "{C:attention}Cloud Cradle{}",
+                    "{C:attention}Starlight Obelisk{}",
                 }
             },
             ag_unlock_lemurian_deck = {
                 name = "Locked",
-                text = {
+                unlock = {
                     "Unlock by discovering",
                     "{C:attention}Weithiwr Haearn{}",
                 }

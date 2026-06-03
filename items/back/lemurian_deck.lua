@@ -112,10 +112,14 @@ SMODS.Back({
             "in deck and the",
             "{C:attention}Metalworker{}",
         },
+        unlock = {
+            "Unlock by discovering",
+            "{C:attention}Weithiwr Haearn{}",
+        },
     },
 
     locked_loc_vars = function()
-        return { key = "ag_unlock_lemurian_deck", set = "Back" }
+        return { vars = {} }
     end,
 
     check_for_unlock = function(self, args)

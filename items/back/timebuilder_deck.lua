@@ -9,9 +9,9 @@ local TIMEBUILDER_DECK_KEYS = {
     "b_timebuilder_deck",
 }
 
-local function is_cloud_cradle_discovered()
+local function is_starlight_obelisk_discovered()
     return AG_UTIL.is_center_discovered
-        and AG_UTIL.is_center_discovered("Joker", "cloudcradle")
+        and AG_UTIL.is_center_discovered("Joker", "starlightobelisk")
         or false
 end
 
@@ -150,14 +150,18 @@ SMODS.Back({
             "Defeating a {C:attention}Boss Blind{}",
             "adds {C:attention}2{} more Seals",
         },
+        unlock = {
+            "Unlock by discovering",
+            "{C:attention}Starlight Obelisk{}",
+        },
     },
 
     locked_loc_vars = function()
-        return { key = "ag_unlock_timebuilder_deck", set = "Back" }
+        return { vars = {} }
     end,
 
     check_for_unlock = function(self, args)
-        return args and args.type == "discover_amount" and is_cloud_cradle_discovered()
+        return args and args.type == "discover_amount" and is_starlight_obelisk_discovered()
     end,
 
     config = {

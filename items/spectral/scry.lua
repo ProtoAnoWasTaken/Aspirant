@@ -1,8 +1,8 @@
 SMODS.Atlas({
     key = 'scry',
     path = 'scry.png',
-    px = 63,
-    py = 93,
+    px = 71,
+    py = 95,
 })
 
 local function center_matches(center, suffix)
