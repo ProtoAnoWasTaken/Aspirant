@@ -986,8 +986,8 @@ local function ag_recheck_unlocks()
     end
 
     -- Re-run discovery-gated unlocks only after discovery tallies exist.
-    if G and G.DISCOVER_TALLIES then
-        fire_unlock({ type = "discover_amount" })
+    if G and G.DISCOVER_TALLIES and G.DISCOVER_TALLIES.total then
+        fire_unlock({ type = "discover_amount", amount = G.DISCOVER_TALLIES.total.tally or 0 })
     end
 
     -- Re-run achievement-gated unlocks for achievements already earned.
@@ -1018,7 +1018,30 @@ local function ag_recheck_unlocks()
         fire_unlock({ type = achievement_key })
     end
 
+    if AG.lemurian_deck and AG.lemurian_deck.sync_unlock_state then
+        AG.lemurian_deck.sync_unlock_state()
+    end
+
+    if AG.timebuilder_deck and AG.timebuilder_deck.sync_unlock_state then
+        AG.timebuilder_deck.sync_unlock_state()
+    end
+
     ag_normalize_joker_collection_order()
+end
+
+local function ag_install_unlock_recheck_hook()
+    if not SMODS or type(SMODS.SAVE_UNLOCKS) ~= "function" or AG.unlock_recheck_hook_installed then
+        return
+    end
+
+    AG.unlock_recheck_hook_installed = true
+    local ag_save_unlocks_ref = SMODS.SAVE_UNLOCKS
+
+    function SMODS.SAVE_UNLOCKS(...)
+        local results = { ag_save_unlocks_ref(...) }
+        ag_recheck_unlocks()
+        return unpack(results)
+    end
 end
 
 local function load_folder(rel_folder)
@@ -1078,7 +1101,7 @@ end
 load_folder("localization")
 load_folder("items")
 ag_normalize_joker_collection_order()
-ag_recheck_unlocks()
+ag_install_unlock_recheck_hook()
 
 AG.test_deck.sync_availability()
 

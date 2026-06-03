@@ -25,14 +25,13 @@ local function has_andromeda()
     return false
 end
 
-function AG.unlock_through_solid_ground()
-    if not has_andromeda() then
+function AG.unlock_through_solid_ground(args)
+    if not (args and args.force) and not has_andromeda() then
         return
     end
 
     if check_for_unlock then
         check_for_unlock({ type = 'through_solid_ground' })
-        return
     end
 
     if unlock_achievement then

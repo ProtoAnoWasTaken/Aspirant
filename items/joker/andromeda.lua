@@ -187,7 +187,7 @@ local function trigger_supernova(card)
     upgrade_visible_hands(card)
 
     if AG.unlock_through_solid_ground then
-        AG.unlock_through_solid_ground()
+        AG.unlock_through_solid_ground({ force = true })
     end
 
     extra.supernova_active = false

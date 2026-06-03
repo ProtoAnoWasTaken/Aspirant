@@ -24,6 +24,53 @@ local function center_matches_key(center, key)
         )
 end
 
+local function find_timebuilder_deck_center()
+    for _, center in pairs((G and G.P_CENTERS) or {}) do
+        if center and center.set == "Back" then
+            for _, key in ipairs(TIMEBUILDER_DECK_KEYS) do
+                if center_matches_key(center, key) then
+                    return center
+                end
+            end
+        end
+    end
+
+    return nil
+end
+
+local function unlock_timebuilder_deck_center(center)
+    if not center then
+        return false
+    end
+
+    if unlock_card then
+        unlock_card(center)
+    else
+        center.unlocked = true
+        if discover_card then
+            discover_card(center)
+        else
+            center.discovered = true
+        end
+        if G and G.save_progress then
+            G:save_progress()
+        end
+    end
+
+    return center.unlocked == true
+end
+
+function AG_TIMEBUILDER_DECK.sync_unlock_state()
+    local center = find_timebuilder_deck_center()
+    local should_unlock = center and not center.unlocked and is_starlight_obelisk_discovered()
+
+    if should_unlock then
+        return unlock_timebuilder_deck_center(center)
+    end
+
+    return should_unlock
+end
+
 function AG_TIMEBUILDER_DECK.is_active()
     if G and G.GAME and G.GAME.ag_timebuilder_deck_active then
         return true
@@ -161,11 +208,7 @@ SMODS.Back({
     end,
 
     check_for_unlock = function(self, args)
-        local should_unlock = args and args.type == "discover_amount" and is_starlight_obelisk_discovered()
-        if should_unlock and unlock_card then
-            unlock_card(self)
-        end
-        return should_unlock
+        return args and args.type == "discover_amount" and is_starlight_obelisk_discovered()
     end,
 
     config = {
