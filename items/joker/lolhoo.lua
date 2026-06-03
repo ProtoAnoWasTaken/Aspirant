@@ -122,7 +122,7 @@ SMODS.Joker({
         name = "Lolhoo",
         text = {
             "This Joker gains {X:mult,C:white}X#2#{} Mult at end of round",
-            "{C:red,E:2}Self-destructs{} in {C:attention}#3#{} rounds",
+            "{C:red,E:2}Expires{} in {C:attention}#3#{} rounds",
             "Can consume other {C:attention}Food Jokers{}",
             "for additional rounds based on rarity",
             "{C:inactive}(Currently {X:mult,C:white}X#1#{}{C:inactive} Mult){}",
