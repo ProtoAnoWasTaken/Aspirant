@@ -126,9 +126,20 @@ local function get_mult(card)
     return (card.ability and card.ability.extra and card.ability.extra.mult) or 0
 end
 
+local function set_fresh_destroy_ante(card)
+    if not (card and card.ability) then
+        return
+    end
+
+    card.ability.extra = card.ability.extra or {}
+
+    local current_ante = G and G.GAME and G.GAME.round_resets and G.GAME.round_resets.ante or 1
+    card.ability.extra.destroy_ante = current_ante + 5
+end
+
 local function get_antes_left(card)
     local current_ante = G and G.GAME and G.GAME.round_resets and G.GAME.round_resets.ante or 1
-    local destroy_ante = (card.ability and card.ability.extra and card.ability.extra.destroy_ante) or (current_ante + 4)
+    local destroy_ante = (card.ability and card.ability.extra and card.ability.extra.destroy_ante) or (current_ante + 5)
 
     return math.max(0, destroy_ante - current_ante)
 end
@@ -169,7 +180,7 @@ SMODS.Joker({
     rarity = 1,
     cost = 4,
 
-    config = { extra = { mult = 0, gain = 2, destroy_ante = 5 } },
+    config = { extra = { mult = 0, gain = 2 } },
 
     loc_txt = {
         name = 'Take the Train',
@@ -177,7 +188,7 @@ SMODS.Joker({
             "This Joker gains {C:mult}+#2#{} Mult for each",
             "consecutive hand played while",
             "scoring a {C:attention}face{} card",
-            "{C:red,E:2}Self destructs{} in {C:attention}4{} Antes",
+            "{C:red,E:2}Self destructs{} in {C:attention}5{} Antes",
             "{C:inactive}(Currently {C:mult}+#1#{}{C:inactive} Mult, #3# Antes left){}",
         }
     },
@@ -190,6 +201,10 @@ SMODS.Joker({
                 format_mult(get_antes_left(card)),
             }
         }
+    end,
+
+    set_ability = function(self, card, initial, delay_sprites)
+        set_fresh_destroy_ante(card)
     end,
 
     unlocked = true,
@@ -210,8 +225,7 @@ SMODS.Joker({
 
         AG.train_state.active_take_the_train = (AG.train_state.active_take_the_train or 0) + 1
 
-        local current_ante = G and G.GAME and G.GAME.round_resets and G.GAME.round_resets.ante or 1
-        card.ability.extra.destroy_ante = current_ante + 4
+        set_fresh_destroy_ante(card)
     end,
 
     remove_from_deck = function(self, card, from_debuff)

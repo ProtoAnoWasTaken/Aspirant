@@ -108,6 +108,10 @@ local loc = {
     }
 }
 
+loc.descriptions.Back = loc.descriptions.Back or {}
+loc.descriptions.Back.ag_unlock_discover_weithiwrhaearn = loc.descriptions.Other.ag_unlock_discover_weithiwrhaearn
+loc.descriptions.Back.ag_unlock_discover_cloudcradle = loc.descriptions.Other.ag_unlock_discover_cloudcradle
+
 if SMODS and SMODS.current_mod and SMODS.current_mod.manifest then
     local m = SMODS.current_mod.manifest
     local mod_desc = loc.descriptions.Mod.Aspirant
