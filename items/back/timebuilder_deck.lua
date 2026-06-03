@@ -161,7 +161,11 @@ SMODS.Back({
     end,
 
     check_for_unlock = function(self, args)
-        return args and args.type == "discover_amount" and is_starlight_obelisk_discovered()
+        local should_unlock = args and args.type == "discover_amount" and is_starlight_obelisk_discovered()
+        if should_unlock and unlock_card then
+            unlock_card(self)
+        end
+        return should_unlock
     end,
 
     config = {
