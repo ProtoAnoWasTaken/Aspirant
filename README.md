@@ -9,3 +9,6 @@ This mod was fully scripted by [ProtoAno](https://github.com/ProtoAnoWasTaken) (
 
 > **How much content is currently in the mod?**
 >> As of v1.1, ASPIRANT has 50 jokers, 6 vouchers, 5 boss blinds, 3 decks, 1 spectral card, and 1 seal. It also features 10 achievements for those of you who don't press the Unlock All button, and a "Creative Mode" deck that can be enabled in the config.
+
+> **Why isn't the mod loaded?**
+>> You might not have extracted it correctly. If there's an Aspirant folder *inside of* the Aspirant folder, you need to make sure it's only one folder deep.
