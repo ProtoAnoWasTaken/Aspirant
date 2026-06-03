@@ -153,7 +153,7 @@ SMODS.Back({
     },
 
     locked_loc_vars = function()
-        return { key = "ag_unlock_discover_cloudcradle", set = "Other" }
+        return { key = "ag_unlock_timebuilder_deck", set = "Back" }
     end,
 
     check_for_unlock = function(self, args)

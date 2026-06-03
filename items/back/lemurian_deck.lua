@@ -115,7 +115,7 @@ SMODS.Back({
     },
 
     locked_loc_vars = function()
-        return { key = "ag_unlock_discover_weithiwrhaearn", set = "Other" }
+        return { key = "ag_unlock_lemurian_deck", set = "Back" }
     end,
 
     check_for_unlock = function(self, args)

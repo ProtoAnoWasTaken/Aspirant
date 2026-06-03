@@ -105,12 +105,24 @@ local loc = {
                 }
             }
         },
+        Back = {
+            ag_unlock_timebuilder_deck = {
+                name = "Locked",
+                text = {
+                    "Unlock by discovering",
+                    "{C:attention}Cloud Cradle{}",
+                }
+            },
+            ag_unlock_lemurian_deck = {
+                name = "Locked",
+                text = {
+                    "Unlock by discovering",
+                    "{C:attention}Weithiwr Haearn{}",
+                }
+            },
+        },
     }
 }
-
-loc.descriptions.Back = loc.descriptions.Back or {}
-loc.descriptions.Back.ag_unlock_discover_weithiwrhaearn = loc.descriptions.Other.ag_unlock_discover_weithiwrhaearn
-loc.descriptions.Back.ag_unlock_discover_cloudcradle = loc.descriptions.Other.ag_unlock_discover_cloudcradle
 
 if SMODS and SMODS.current_mod and SMODS.current_mod.manifest then
     local m = SMODS.current_mod.manifest
