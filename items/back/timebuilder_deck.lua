@@ -15,13 +15,6 @@ local function is_starlight_obelisk_discovered()
         and AG_UTIL.is_center_discovered("Joker", "starlightobelisk")
         or false
 
-    if Aspirant.debug_log then
-        Aspirant.debug_log("Timebuilder prerequisite: helper="
-            .. tostring(AG_UTIL.is_center_discovered ~= nil)
-            .. " starlightobelisk_discovered="
-            .. tostring(discovered))
-    end
-
     return discovered
 end
 
@@ -50,23 +43,7 @@ end
 
 local function unlock_timebuilder_deck_center(center)
     if not center then
-        if Aspirant.debug_log then
-            Aspirant.debug_log("Timebuilder unlock attempt: no Back center found")
-        end
         return false
-    end
-
-    if Aspirant.debug_log then
-        Aspirant.debug_log("Timebuilder unlock attempt: key="
-            .. tostring(center.key)
-            .. " original_key="
-            .. tostring(center.original_key)
-            .. " unlocked_before="
-            .. tostring(center.unlocked)
-            .. " discovered_before="
-            .. tostring(center.discovered)
-            .. " unlock_card="
-            .. tostring(type(unlock_card) == "function"))
     end
 
     if unlock_card and G and G.GAME then
@@ -105,27 +82,6 @@ local function unlock_timebuilder_deck_center(center)
         end
     end
 
-    if Aspirant.debug_log then
-        local pool_index = nil
-        for i, back in ipairs((G and G.P_CENTER_POOLS and G.P_CENTER_POOLS.Back) or {}) do
-            if back == center or back.key == center.key then
-                pool_index = i
-                break
-            end
-        end
-
-        Aspirant.debug_log("Timebuilder unlock result: key="
-            .. tostring(center.key)
-            .. " unlocked_after="
-            .. tostring(center.unlocked)
-            .. " discovered_after="
-            .. tostring(center.discovered)
-            .. " save_notify="
-            .. tostring(G and G.save_notify ~= nil)
-            .. " back_pool_index="
-            .. tostring(pool_index))
-    end
-
     return center.unlocked == true
 end
 
@@ -134,17 +90,6 @@ function AG_TIMEBUILDER_DECK.sync_unlock_state()
     local can_unlock_now = not (G and G.GAME)
         or (Aspirant.is_main_menu and Aspirant.is_main_menu())
     local should_unlock = center and not center.unlocked and can_unlock_now and is_starlight_obelisk_discovered()
-
-    if Aspirant.debug_log then
-        Aspirant.debug_log("Timebuilder sync: center="
-            .. tostring(center and center.key)
-            .. " center_unlocked="
-            .. tostring(center and center.unlocked)
-            .. " can_unlock_now="
-            .. tostring(can_unlock_now)
-            .. " should_unlock="
-            .. tostring(should_unlock))
-    end
 
     if should_unlock then
         return unlock_timebuilder_deck_center(center)
@@ -293,21 +238,6 @@ SMODS.Back({
         local prerequisite_met = args and args.type == "discover_amount" and is_starlight_obelisk_discovered()
         local on_main_menu = Aspirant.is_main_menu and Aspirant.is_main_menu() or false
         local result = prerequisite_met and on_main_menu
-
-        if Aspirant.debug_log then
-            Aspirant.debug_log("Timebuilder check_for_unlock: args_type="
-                .. tostring(args and args.type)
-                .. " amount="
-                .. tostring(args and args.amount)
-                .. " self_key="
-                .. tostring(self and self.key)
-                .. " prerequisite_met="
-                .. tostring(prerequisite_met)
-                .. " on_main_menu="
-                .. tostring(on_main_menu)
-                .. " result="
-                .. tostring(result))
-        end
 
         return result
     end,

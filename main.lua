@@ -50,15 +50,6 @@ AG.config = AG_CONFIG
 AG.joker_sort_infos = AG.joker_sort_infos or nil
 AG.item_sort_info_cache = AG.item_sort_info_cache or {}
 
-function AG.debug_log(message)
-    local formatted = "[Aspirant] " .. tostring(message)
-    print(formatted)
-
-    if type(sendInfoMessage) == "function" then
-        sendInfoMessage(formatted, "Aspirant")
-    end
-end
-
 function AG.is_main_menu()
     return G
         and G.STAGES
@@ -988,19 +979,7 @@ end
 
 local function ag_recheck_unlocks()
     if type(check_for_unlock) ~= "function" then
-        if AG.debug_log then
-            AG.debug_log("Unlock recheck skipped: check_for_unlock is not available")
-        end
         return
-    end
-
-    if AG.debug_log then
-        AG.debug_log("Unlock recheck start: locked_count="
-            .. tostring(G and G.P_LOCKED and #G.P_LOCKED)
-            .. " discovery_tally="
-            .. tostring(G and G.DISCOVER_TALLIES and G.DISCOVER_TALLIES.total and G.DISCOVER_TALLIES.total.tally)
-            .. " discovery_of="
-            .. tostring(G and G.DISCOVER_TALLIES and G.DISCOVER_TALLIES.total and G.DISCOVER_TALLIES.total.of))
     end
 
     local fired = {}
@@ -1016,7 +995,8 @@ local function ag_recheck_unlocks()
         end
 
         fired[unlock_type] = true
-        check_for_unlock(args)
+
+        pcall(check_for_unlock, args)
     end
 
     -- Re-run discovery-gated unlocks only after discovery tallies exist.
@@ -1061,38 +1041,17 @@ local function ag_recheck_unlocks()
     end
 
     ag_normalize_joker_collection_order()
-
-    if AG.debug_log then
-        AG.debug_log("Unlock recheck finish: locked_count="
-            .. tostring(G and G.P_LOCKED and #G.P_LOCKED))
-    end
 end
 
 local function ag_install_unlock_recheck_hook()
     if not SMODS or type(SMODS.SAVE_UNLOCKS) ~= "function" or AG.unlock_recheck_hook_installed then
-        if AG.debug_log then
-            AG.debug_log("Unlock recheck hook skipped: smods="
-                .. tostring(SMODS ~= nil)
-                .. " save_unlocks="
-                .. tostring(SMODS and type(SMODS.SAVE_UNLOCKS))
-                .. " installed="
-                .. tostring(AG.unlock_recheck_hook_installed))
-        end
         return
     end
 
     AG.unlock_recheck_hook_installed = true
     local ag_save_unlocks_ref = SMODS.SAVE_UNLOCKS
 
-    if AG.debug_log then
-        AG.debug_log("Unlock recheck hook installed")
-    end
-
     function SMODS.SAVE_UNLOCKS(...)
-        if AG.debug_log then
-            AG.debug_log("SAVE_UNLOCKS wrapper fired")
-        end
-
         local results = { ag_save_unlocks_ref(...) }
         ag_recheck_unlocks()
         return unpack(results)
@@ -1195,10 +1154,6 @@ if type(set_main_menu_UI) == "function" and not AG.main_menu_unlock_recheck_hook
 
     function set_main_menu_UI(...)
         local results = { ag_set_main_menu_ui_ref(...) }
-
-        if AG.debug_log then
-            AG.debug_log("Main menu UI hook fired: running deferred unlock recheck")
-        end
 
         ag_recheck_unlocks()
         return unpack(results)
