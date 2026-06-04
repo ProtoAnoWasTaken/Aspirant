@@ -24,7 +24,11 @@ local function get_face_cards_by_random_suit(excluded_suits)
             local matching_cards = {}
 
             for _, playing_card in ipairs(G.playing_cards) do
-                if not playing_card.getting_sliced and playing_card:is_face() and playing_card:is_suit(suit) then
+                if not playing_card.removed
+                    and not playing_card.getting_sliced
+                    and playing_card:is_face()
+                    and playing_card:is_suit(suit)
+                then
                     matching_cards[#matching_cards + 1] = playing_card
                 end
             end
@@ -55,6 +59,7 @@ local function get_negative_target(source_card, excluded_jokers)
 
     for _, joker in ipairs(G.jokers.cards) do
         if joker ~= source_card
+            and not joker.removed
             and not joker.getting_sliced
             and not (joker.edition and joker.edition.negative)
             and not (excluded_jokers and excluded_jokers[joker])
@@ -68,6 +73,50 @@ local function get_negative_target(source_card, excluded_jokers)
     end
 
     return pseudorandom_element(jokers, pseudoseed('ag_baby_negative'))
+end
+
+local function remove_card_from_area(area, card)
+    if not area or not area.cards or not card then
+        return
+    end
+
+    for index = #area.cards, 1, -1 do
+        if area.cards[index] == card then
+            if area.remove_card then
+                area:remove_card(card)
+            else
+                table.remove(area.cards, index)
+            end
+            return
+        end
+    end
+end
+
+local function cleanup_destroyed_playing_card(card)
+    if not card then
+        return
+    end
+
+    remove_card_from_area(G.deck, card)
+    remove_card_from_area(G.hand, card)
+    remove_card_from_area(G.discard, card)
+    remove_card_from_area(G.play, card)
+end
+
+local function get_destroyable_cards(cards)
+    local destroyable_cards = {}
+
+    for _, destroyed_card in ipairs(cards or {}) do
+        if destroyed_card
+            and not destroyed_card.removed
+            and not destroyed_card.getting_sliced
+            and destroyed_card:is_face()
+        then
+            destroyable_cards[#destroyable_cards + 1] = destroyed_card
+        end
+    end
+
+    return destroyable_cards
 end
 
 local function trigger_baby_effect(card)
@@ -102,11 +151,20 @@ local function trigger_baby_effect(card)
         delay = 0.1,
         func = function()
             for _, destroyed_cards in ipairs(destroyed_groups) do
-                SMODS.destroy_cards(destroyed_cards)
+                local destroyable_cards = get_destroyable_cards(destroyed_cards)
+
+                if #destroyable_cards > 0 then
+                    SMODS.destroy_cards(destroyable_cards)
+                    for _, destroyed_card in ipairs(destroyable_cards) do
+                        cleanup_destroyed_playing_card(destroyed_card)
+                    end
+                end
             end
 
             for _, negative_target in ipairs(negative_targets) do
-                negative_target:set_edition({ negative = true }, true, true)
+                if negative_target and not negative_target.removed and not negative_target.getting_sliced then
+                    negative_target:set_edition({ negative = true }, true, true)
+                end
             end
 
             return true
