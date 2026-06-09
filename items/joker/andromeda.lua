@@ -266,7 +266,7 @@ SMODS.Joker({
     end,
 
     unlocked = false,
-    blueprint_compat = false,
+    blueprint_compat = true,
     eternal_compat = false,
     perishable_compat = true,
 
