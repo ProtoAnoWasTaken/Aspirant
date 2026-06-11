@@ -5,6 +5,8 @@ SMODS.Atlas({
     py = 93,
 })
 
+local AG_UTIL = (rawget(_G, 'Aspirant') or {}).joker_utils or {}
+
 local function format_xmult(value)
     local formatted = string.format('%.2f', value)
     formatted = formatted:gsub('(%..-)0+$', '%1')
@@ -24,26 +26,19 @@ local function get_threshold(card)
 end
 
 local function count_self_destructs(context, source_card)
-    if not context or context.blueprint then
-        return 0
-    end
-
-    if context.joker_type_destroyed and context.card and context.card ~= source_card then
-        return 1
-    end
-
-    if context.remove_playing_cards then
-        local removed_cards = context.removed
-
-        if type(removed_cards) == 'table' then
-            return #removed_cards
-        end
-    end
-
-    return 0
+    return AG_UTIL.count_self_destructs and AG_UTIL.count_self_destructs(context, source_card) or 0
 end
 
 local function destroy_molten_maggot(card)
+    if AG_UTIL.destroy_card then
+        AG_UTIL.destroy_card(card, {
+            colours = { G.C.RED },
+            self_destruct = true,
+            source_card = card,
+        })
+        return
+    end
+
     card.getting_sliced = true
 
     if Aspirant and Aspirant.unlock_secret_stair_2 then
@@ -75,7 +70,7 @@ SMODS.Joker({
         name = 'Molten Maggot',
         text = {
             "This Joker gains {X:mult,C:white}X#2#{} Mult",
-            "whenever a card self destructs",
+            "whenever a card {C:red,E:2}self destructs{}",
             "{C:red,E:2}Self destructs{} in {X:mult,C:white}X#3#{} Mult",
             "{C:inactive}(Currently {X:mult,C:white}X#1#{}{C:inactive} Mult){}",
         }

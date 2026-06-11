@@ -5,6 +5,7 @@ SMODS.Atlas({
     py = 93,
 })
 
+local AG_UTIL = (rawget(_G, 'Aspirant') or {}).joker_utils or {}
 local UNIQUE_TARGET = 3
 
 local function get_unique_consumed(card)
@@ -81,6 +82,16 @@ end
 
 local function trigger_payoff(card)
     create_reward_tags(UNIQUE_TARGET)
+
+    if AG_UTIL.destroy_card then
+        AG_UTIL.destroy_card(card, {
+            colours = { G.C.RED },
+            delay = 0.2,
+            self_destruct = true,
+            source_card = card,
+        })
+        return
+    end
 
     G.E_MANAGER:add_event(Event({
         trigger = 'after',

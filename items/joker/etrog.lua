@@ -5,6 +5,8 @@ SMODS.Atlas({
     py = 93,
 })
 
+local AG_UTIL = (rawget(_G, 'Aspirant') or {}).joker_utils or {}
+
 local function get_hands_remaining(card)
     return (card.ability and card.ability.extra and card.ability.extra.hands_remaining) or 8
 end
@@ -19,6 +21,15 @@ local function get_hands_used_this_round(card)
 end
 
 local function destroy_etrog(card)
+    if AG_UTIL.destroy_card then
+        AG_UTIL.destroy_card(card, {
+            colours = { G.C.RED },
+            self_destruct = true,
+            source_card = card,
+        })
+        return
+    end
+
     card.getting_sliced = true
 
     G.E_MANAGER:add_event(Event({
@@ -97,10 +108,19 @@ SMODS.Joker({
             and not context.repetition
             and not context.individual
             and not context.retrigger_joker
+            and not card.getting_sliced
             and get_hands_remaining(card) > 0
         then
             card.ability.extra.hands_remaining = get_hands_remaining(card) - 1
             card.ability.extra.hands_used_this_round = get_hands_used_this_round(card) + 1
+
+            if get_hands_remaining(card) <= 0 then
+                destroy_etrog(card)
+                return {
+                    message = "Expired!",
+                    colour = G.C.RED,
+                }
+            end
 
             return {
                 message = tostring(get_hands_remaining(card)) .. " left",

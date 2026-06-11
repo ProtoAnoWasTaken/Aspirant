@@ -198,7 +198,12 @@ local function trigger_supernova(card)
         delay = 0.1,
         func = function()
             if card and not card.removed and not card.getting_sliced and AG_UTIL.destroy_card then
-                AG_UTIL.destroy_card(card, { colours = { G.C.RED }, delay = 0 })
+                AG_UTIL.destroy_card(card, {
+                    colours = { G.C.RED },
+                    delay = 0,
+                    self_destruct = true,
+                    source_card = card,
+                })
             end
             return true
         end,

@@ -5,6 +5,7 @@ SMODS.Atlas({
     py = 93,
 })
 
+local AG_UTIL = (rawget(_G, 'Aspirant') or {}).joker_utils or {}
 local CHERISHED_VINYL_CENTER_KEY = 'j_tk9g_cherishedvinyl'
 
 local function vinyl_music_enabled()
@@ -128,7 +129,6 @@ SMODS.Joker({
 
         if context.end_of_round and context.main_eval and not context.blueprint and not card.getting_sliced then
             if pseudorandom('ag_cherishedvinyl_destroy') > 0.66 then
-                card.getting_sliced = true
                 local destroy_message = pseudorandom('ag_cherishedvinyl_destroy_message') > 0.95
                     and 'He was destroyed!'
                     or 'Destroyed!'
@@ -137,15 +137,24 @@ SMODS.Joker({
                     Aspirant.unlock_dear_sweet_music()
                 end
 
-                G.E_MANAGER:add_event(Event({
-                    func = function()
-                        if card and not card.removed then
-                            play_sound('glass' .. math.random(1, 6), math.random() * 0.2 + 0.9, 0.5)
-                            card:start_dissolve({ G.C.RED }, nil, 1.6)
-                        end
-                        return true
-                    end,
-                }))
+                if AG_UTIL.destroy_card then
+                    AG_UTIL.destroy_card(card, {
+                        colours = { G.C.RED },
+                        self_destruct = true,
+                        source_card = card,
+                    })
+                else
+                    card.getting_sliced = true
+                    G.E_MANAGER:add_event(Event({
+                        func = function()
+                            if card and not card.removed then
+                                play_sound('glass' .. math.random(1, 6), math.random() * 0.2 + 0.9, 0.5)
+                                card:start_dissolve({ G.C.RED }, nil, 1.6)
+                            end
+                            return true
+                        end,
+                    }))
+                end
 
                 return {
                     message = destroy_message,

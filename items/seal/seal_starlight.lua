@@ -97,7 +97,12 @@ local function try_trigger_glass_break(card)
             })
 
             if AG_UTIL.destroy_card then
-                AG_UTIL.destroy_card(card, { colours = { G.C.RED }, delay = 0 })
+                AG_UTIL.destroy_card(card, {
+                    colours = { G.C.RED },
+                    delay = 0,
+                    self_destruct = true,
+                    source_card = card,
+                })
             else
                 card.getting_sliced = true
                 card:start_dissolve({ G.C.RED }, nil, 1.6)

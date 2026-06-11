@@ -61,7 +61,7 @@ local loc = {
                 name = "Locked",
                 text = {
                     "Unlock by having",
-                    "{C:attention}Cherry Bomb{} self-destruct",
+                    "{C:attention}Cherry Bomb{} {C:red,E:2}self destruct{}",
                 }
             },
             ag_proposed_card = {

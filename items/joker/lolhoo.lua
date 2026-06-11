@@ -11,6 +11,8 @@ SMODS.Sound({
     prefix_config = { key = false },
 })
 
+local AG_UTIL = (rawget(_G, 'Aspirant') or {}).joker_utils or {}
+
 local function format_xmult(value)
     local formatted = string.format("%.2f", value)
     formatted = formatted:gsub("(%..-)0+$", "%1")
@@ -75,6 +77,15 @@ local function get_consumable_food_targets(source_card)
 end
 
 local function destroy_lolhoo(card)
+    if AG_UTIL.destroy_card then
+        AG_UTIL.destroy_card(card, {
+            colours = { G.C.RED },
+            self_destruct = true,
+            source_card = card,
+        })
+        return
+    end
+
     card.getting_sliced = true
 
     G.E_MANAGER:add_event(Event({

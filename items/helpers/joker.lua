@@ -59,6 +59,79 @@ function AG_UTIL.format_xmult(value)
     return formatted:gsub('%.$', '')
 end
 
+function AG_UTIL.is_glass_card(card)
+    return card
+        and (
+            (SMODS and SMODS.has_enhancement and SMODS.has_enhancement(card, 'm_glass'))
+            or (card.ability and card.ability.effect == 'Glass Card')
+        )
+end
+
+function AG_UTIL.is_food_joker(card)
+    return card
+        and card.is_food
+        and card:is_food()
+end
+
+function AG_UTIL.center_mentions_self_destruct(center)
+    local text = center and center.loc_txt and center.loc_txt.text
+    if type(text) ~= 'table' then
+        return false
+    end
+
+    for _, line in ipairs(text) do
+        if type(line) == 'string' then
+            local normalized = line:lower():gsub('%b{}', ''):gsub('%-', ' ')
+            if normalized:find('self%s+destruct') then
+                return true
+            end
+        end
+    end
+
+    return false
+end
+
+function AG_UTIL.is_self_destructing_joker(card)
+    local center = card and card.config and card.config.center
+    return AG_UTIL.is_food_joker(card)
+        or AG_UTIL.center_mentions_self_destruct(center)
+end
+
+function AG_UTIL.count_self_destructs(context, source_card)
+    if not context or context.blueprint then
+        return 0
+    end
+
+    local destroyed_card = context.destroyed_card or context.card
+    if context.ag_card_self_destructed and destroyed_card and destroyed_card ~= source_card then
+        return 1
+    end
+
+    if context.joker_type_destroyed
+        and destroyed_card
+        and destroyed_card ~= source_card
+        and not context.selling_self
+        and not destroyed_card.ag_destroy_reported_by_aspirant
+        and AG_UTIL.is_self_destructing_joker(destroyed_card)
+    then
+        return 1
+    end
+
+    if context.remove_playing_cards and type(context.removed) == 'table' then
+        local glass_cards = 0
+
+        for _, removed_card in ipairs(context.removed) do
+            if AG_UTIL.is_glass_card(removed_card) and not removed_card.ag_self_destruct_reported then
+                glass_cards = glass_cards + 1
+            end
+        end
+
+        return glass_cards
+    end
+
+    return 0
+end
+
 function AG_UTIL.notify_card_created(source_card, created_card)
     if SMODS and SMODS.calculate_context and source_card and created_card then
         SMODS.calculate_context({
@@ -80,7 +153,12 @@ function AG_UTIL.destroy_card(card, opts)
 
     local self_destruct = opts.self_destruct
     if self_destruct == nil then
-        self_destruct = not opts.source_card or opts.source_card == card
+        self_destruct = opts.source_card ~= nil and opts.source_card == card
+    end
+
+    card.ag_destroy_reported_by_aspirant = true
+    if self_destruct then
+        card.ag_self_destruct_reported = true
     end
 
     if SMODS and SMODS.calculate_context then

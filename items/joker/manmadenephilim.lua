@@ -151,13 +151,16 @@ SMODS.Joker({
         if not extra then return end
         local gain = extra.gain or 10
 
+        local self_destructs = AG_UTIL.count_self_destructs and AG_UTIL.count_self_destructs(context, card) or 0
+
         if context.ag_lemurian_destroyed_card
             or context.ag_lemurian_created_card
-            or (context.ag_card_self_destructed and context.destroyed_card ~= card)
+            or self_destructs > 0
         then
-            extra.mult = (extra.mult or 0) + gain
+            local gained_mult = self_destructs > 0 and (gain * self_destructs) or gain
+            extra.mult = (extra.mult or 0) + gained_mult
             return {
-                message = '+' .. tostring(gain) .. ' Mult',
+                message = '+' .. tostring(gained_mult) .. ' Mult',
                 colour = G.C.MULT,
             }
         end

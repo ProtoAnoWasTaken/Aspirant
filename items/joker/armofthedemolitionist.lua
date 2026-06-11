@@ -83,12 +83,14 @@ SMODS.Joker({
             return
         end
 
-        if context.ag_card_self_destructed and context.destroyed_card ~= card then
+        local self_destructs = AG_UTIL.count_self_destructs and AG_UTIL.count_self_destructs(context, card) or 0
+        if self_destructs > 0 then
             local extra = get_extra(card)
-            extra.mult = get_mult(card) + get_gain(card)
+            local gained_mult = get_gain(card) * self_destructs
+            extra.mult = get_mult(card) + gained_mult
 
             return {
-                message = '+' .. tostring(get_gain(card)) .. ' Mult',
+                message = '+' .. tostring(gained_mult) .. ' Mult',
                 colour = G.C.MULT,
             }
         end

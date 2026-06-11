@@ -8,6 +8,7 @@ SMODS.Atlas({
 Aspirant = rawget(_G, 'Aspirant') or {}
 
 local AG = Aspirant
+local AG_UTIL = AG.joker_utils or {}
 local TAKE_THE_TRAIN_CENTER_KEY = 'j_tk9g_takethetrain'
 local RIDE_THE_BUS_CENTER_KEY = 'j_ride_the_bus'
 
@@ -157,6 +158,15 @@ local function hand_scores_face_card(scoring_hand)
 end
 
 local function destroy_take_the_train(card)
+    if AG_UTIL.destroy_card then
+        AG_UTIL.destroy_card(card, {
+            colours = { G.C.RED },
+            self_destruct = true,
+            source_card = card,
+        })
+        return
+    end
+
     card.getting_sliced = true
 
     G.E_MANAGER:add_event(Event({

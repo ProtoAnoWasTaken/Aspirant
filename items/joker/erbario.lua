@@ -32,7 +32,12 @@ end
 
 local function destroy(card)
     if AG_UTIL.destroy_card then
-        AG_UTIL.destroy_card(card, { colours = { G.C.RED }, delay = 0 })
+        AG_UTIL.destroy_card(card, {
+            colours = { G.C.RED },
+            delay = 0,
+            self_destruct = true,
+            source_card = card,
+        })
     end
 end
 

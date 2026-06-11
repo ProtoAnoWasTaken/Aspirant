@@ -98,9 +98,13 @@ local function get_destroyable_targets(source_card)
     return special_targets, common_targets
 end
 
-local function destroy_joker(target)
+local function destroy_joker(source_card, target)
     if AG_UTIL.destroy_card then
-        AG_UTIL.destroy_card(target, { colours = { G.C.RED } })
+        AG_UTIL.destroy_card(target, {
+            colours = { G.C.RED },
+            source_card = source_card,
+            self_destruct = false,
+        })
     end
 end
 
@@ -128,7 +132,7 @@ local function consume_target(card)
     end
 
     card.ability.extra.xmult = get_xmult(card) + xmult_gain
-    destroy_joker(target)
+    destroy_joker(card, target)
 
     return {
         target = target,
