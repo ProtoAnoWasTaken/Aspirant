@@ -192,6 +192,61 @@ function AG_UTIL.destroy_card(card, opts)
     return true
 end
 
+function AG_UTIL.get_adjacent_jokers(card)
+    if not G or not G.jokers or not G.jokers.cards then
+        return {}
+    end
+
+    local adjacent = {}
+    local card_index = nil
+
+    for i, joker in ipairs(G.jokers.cards) do
+        if joker == card then
+            card_index = i
+            break
+        end
+    end
+
+    if not card_index then
+        return adjacent
+    end
+
+    if card_index > 1 then
+        adjacent[#adjacent + 1] = G.jokers.cards[card_index - 1]
+    end
+
+    if card_index < #G.jokers.cards then
+        adjacent[#adjacent + 1] = G.jokers.cards[card_index + 1]
+    end
+
+    return adjacent
+end
+
+function AG_UTIL.consume_protective_beam(card)
+    for _, adjacent_joker in ipairs(AG_UTIL.get_adjacent_jokers(card)) do
+        local center = adjacent_joker and adjacent_joker.config and adjacent_joker.config.center
+
+        if adjacent_joker
+            and not adjacent_joker.getting_sliced
+            and AG_UTIL.center_matches(center, 'protectivebeam')
+        then
+            card.protected_from_destruct = true
+            adjacent_joker:juice_up(0.8, 0.5)
+            play_sound('glass' .. math.random(1, 6), math.random() * 0.2 + 0.9, 0.5)
+            AG_UTIL.destroy_card(adjacent_joker, {
+                colours = { G.C.RED },
+                delay = 0,
+                self_destruct = true,
+                source_card = adjacent_joker,
+            })
+            card.protected_from_destruct = nil
+            return true
+        end
+    end
+
+    return false
+end
+
 function AG_UTIL.get_arm_cards()
     local arm_cards = {}
 

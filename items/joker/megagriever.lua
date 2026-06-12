@@ -83,6 +83,10 @@ end
 local function trigger_payoff(card)
     create_reward_tags(UNIQUE_TARGET)
 
+    if AG_UTIL.consume_protective_beam and AG_UTIL.consume_protective_beam(card) then
+        return
+    end
+
     if AG_UTIL.destroy_card then
         AG_UTIL.destroy_card(card, {
             colours = { G.C.RED },

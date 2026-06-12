@@ -193,6 +193,15 @@ local function trigger_supernova(card)
     extra.supernova_active = false
     extra.supernova_resolving = true
 
+    if AG_UTIL.consume_protective_beam and AG_UTIL.consume_protective_beam(card) then
+        extra.supernova_resolving = false
+        return bonus_chips
+    end
+
+    if G and G.GAME then
+        G.GAME.ag_andromeda_self_destructed = true
+    end
+
     G.E_MANAGER:add_event(Event({
         trigger = 'after',
         delay = 0.1,
