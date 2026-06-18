@@ -102,18 +102,27 @@ end
 local function consume_food_joker(source_card, target)
     local gained_rounds = get_food_rarety_rounds(target)
 
-    target.getting_sliced = true
     source_card.ability.extra.rounds = get_rounds(source_card) + gained_rounds
 
-    G.E_MANAGER:add_event(Event({
-        func = function()
-            if target and not target.removed then
-                play_sound("chomp")
-                target:start_dissolve({ G.C.RED }, nil, 1.6)
-            end
-            return true
-        end,
-    }))
+    if AG_UTIL.destroy_card then
+        AG_UTIL.destroy_card(target, {
+            colours = { G.C.RED },
+            sound = "chomp",
+            source_card = source_card,
+        })
+    else
+        target.getting_sliced = true
+
+        G.E_MANAGER:add_event(Event({
+            func = function()
+                if target and not target.removed then
+                    play_sound("chomp")
+                    target:start_dissolve({ G.C.RED }, nil, 1.6)
+                end
+                return true
+            end,
+        }))
+    end
 
     return gained_rounds
 end

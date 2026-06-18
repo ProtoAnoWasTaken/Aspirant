@@ -59,17 +59,26 @@ local function consume_random_enhanced_card(card)
         card.ability.extra.unique_consumed = get_unique_consumed(card) + 1
     end
 
-    G.E_MANAGER:add_event(Event({
-        trigger = 'after',
-        delay = 0.1,
-        func = function()
-            if target and not target.removed and not target.getting_sliced then
-                target.getting_sliced = true
-                target:start_dissolve(nil, true)
+    if AG_UTIL.destroy_card then
+        AG_UTIL.destroy_card(target, {
+            silent = true,
+            sound = false,
+            delay = 0.1,
+            source_card = card,
+        })
+    else
+        G.E_MANAGER:add_event(Event({
+            trigger = 'after',
+            delay = 0.1,
+            func = function()
+                if target and not target.removed and not target.getting_sliced then
+                    target.getting_sliced = true
+                    target:start_dissolve(nil, true)
+                end
+                return true
             end
-            return true
-        end
-    }))
+        }))
+    end
 
     return target, is_new_type
 end

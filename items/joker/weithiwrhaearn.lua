@@ -23,6 +23,16 @@ local function center_matches(center, suffix)
     return AG_UTIL.center_matches and AG_UTIL.center_matches(center, suffix) or false
 end
 
+local function is_arm_center(center)
+    for _, suffix in ipairs(AG_UTIL.arm_keys or {}) do
+        if center_matches(center, suffix) then
+            return true
+        end
+    end
+
+    return false
+end
+
 local function is_drommo_discovered()
     return AG_UTIL.is_center_discovered
         and AG_UTIL.is_center_discovered('Joker', 'drommo')
@@ -65,6 +75,7 @@ local function is_common_joker(card, source_card)
         and card ~= source_card
         and not card.getting_sliced
         and center
+        and not is_arm_center(center)
         and rarity == 1
 end
 
@@ -76,6 +87,7 @@ local function is_uncommon_joker(card, source_card)
         and card ~= source_card
         and not card.getting_sliced
         and center
+        and not is_arm_center(center)
         and rarity == 2
 end
 

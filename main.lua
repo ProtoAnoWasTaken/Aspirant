@@ -24,6 +24,7 @@ end
 -- =========================================
 
 SMODS.current_mod.optional_features = {
+    object_weights = true,
     retrigger_joker = true,
     post_trigger = true,
     quantum_enhancements = true,

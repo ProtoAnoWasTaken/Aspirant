@@ -18,7 +18,15 @@ end
 
 local function get_gain(card)
     local extra = get_extra(card)
-    return extra and extra.gain or 10
+    return extra and extra.gain or 5
+end
+
+local function count_destroyed_by_card(context, card)
+    if AG_UTIL.install_destroy_source_hooks then
+        AG_UTIL.install_destroy_source_hooks()
+    end
+
+    return AG_UTIL.count_cards_destroyed_by_card and AG_UTIL.count_cards_destroyed_by_card(context, card) or 0
 end
 
 local function try_combine(card)
@@ -43,7 +51,7 @@ SMODS.Joker({
     config = {
         extra = {
             mult = 0,
-            gain = 10,
+            gain = 5,
         }
     },
 
@@ -51,8 +59,8 @@ SMODS.Joker({
         name = 'Arm of the Warrior',
         text = {
             'This Joker gains {C:mult}+#2#{} Mult',
-            'whenever a {C:attention}Lemurian{} Joker',
-            'destroys a card',
+            'whenever a {C:attention}card{}',
+            'destroys another {C:attention}card{}',
             '{C:inactive}(Currently {C:mult}+#1#{}{C:inactive} Mult){}',
         }
     },
@@ -84,12 +92,15 @@ SMODS.Joker({
             return
         end
 
-        if context.ag_lemurian_destroyed_card and context.source_card ~= card then
+        local destroyed_count = count_destroyed_by_card(context, card)
+
+        if destroyed_count > 0 then
             local extra = get_extra(card)
-            extra.mult = get_mult(card) + get_gain(card)
+            local gained_mult = get_gain(card) * destroyed_count
+            extra.mult = get_mult(card) + gained_mult
 
             return {
-                message = '+' .. tostring(get_gain(card)) .. ' Mult',
+                message = '+' .. tostring(gained_mult) .. ' Mult',
                 colour = G.C.MULT,
             }
         end

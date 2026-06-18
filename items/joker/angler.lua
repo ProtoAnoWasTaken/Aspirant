@@ -5,6 +5,8 @@ SMODS.Atlas({
     py = 93,
 })
 
+local AG_UTIL = (rawget(_G, 'Aspirant') or {}).joker_utils or {}
+
 local function is_legendary_joker(joker)
     local center = joker and joker.config and joker.config.center
     local rarity = center and center.rarity
@@ -78,19 +80,27 @@ end
 
 local function destroy_jokers(card, jokers)
     for _, joker in ipairs(jokers) do
-        G.E_MANAGER:add_event(Event({
-            trigger = 'after',
-            delay = 0.1,
-            func = function()
-                if joker and not joker.removed and not joker.getting_sliced then
-                    joker.getting_sliced = true
-                    play_sound('glass' .. math.random(1, 6), math.random() * 0.2 + 0.9, 0.5)
-                    joker:start_dissolve({ G.C.RED }, nil, 1.6)
-                end
+        if AG_UTIL.destroy_card then
+            AG_UTIL.destroy_card(joker, {
+                colours = { G.C.RED },
+                delay = 0.1,
+                source_card = card,
+            })
+        else
+            G.E_MANAGER:add_event(Event({
+                trigger = 'after',
+                delay = 0.1,
+                func = function()
+                    if joker and not joker.removed and not joker.getting_sliced then
+                        joker.getting_sliced = true
+                        play_sound('glass' .. math.random(1, 6), math.random() * 0.2 + 0.9, 0.5)
+                        joker:start_dissolve({ G.C.RED }, nil, 1.6)
+                    end
 
-                return true
-            end,
-        }))
+                    return true
+                end,
+            }))
+        end
     end
 
     if #jokers > 0 then

@@ -9,6 +9,13 @@ AG.joker_utils.arm_keys = AG.joker_utils.arm_keys or {
     'armofthearchitect',
     'armofthepioneer',
 }
+AG.arm_commonness = AG.arm_commonness or {
+    boost = 0.10,
+    installed = {},
+    polling_uncommon_joker = false,
+}
+AG.destroy_source_stack = AG.destroy_source_stack or {}
+AG.destroy_source_hooks_installed = AG.destroy_source_hooks_installed or {}
 
 local AG_UTIL = AG.joker_utils
 
@@ -132,6 +139,195 @@ function AG_UTIL.count_self_destructs(context, source_card)
     return 0
 end
 
+function AG_UTIL.push_card_destroy_source(card)
+    if card then
+        AG.destroy_source_stack[#AG.destroy_source_stack + 1] = card
+    end
+end
+
+function AG_UTIL.pop_card_destroy_source(card)
+    if not card or #AG.destroy_source_stack == 0 then
+        return
+    end
+
+    for i = #AG.destroy_source_stack, 1, -1 do
+        if AG.destroy_source_stack[i] == card then
+            table.remove(AG.destroy_source_stack, i)
+            return
+        end
+    end
+end
+
+function AG_UTIL.current_card_destroy_source(excluded_card)
+    for i = #AG.destroy_source_stack, 1, -1 do
+        local source_card = AG.destroy_source_stack[i]
+        if source_card and source_card ~= excluded_card then
+            return source_card
+        end
+    end
+
+    return nil
+end
+
+function AG_UTIL.wrap_destroy_source_events(source_card)
+    if not (source_card and G and G.E_MANAGER and G.E_MANAGER.add_event) then
+        return nil
+    end
+
+    local add_event_ref = G.E_MANAGER.add_event
+
+    G.E_MANAGER.add_event = function(event_manager, event)
+        if event and type(event.func) == 'function' then
+            local func_ref = event.func
+
+            event.func = function(...)
+                AG_UTIL.push_card_destroy_source(source_card)
+                local results = { func_ref(...) }
+                AG_UTIL.pop_card_destroy_source(source_card)
+                return unpack(results)
+            end
+        end
+
+        return add_event_ref(event_manager, event)
+    end
+
+    return add_event_ref
+end
+
+function AG_UTIL.unwrap_destroy_source_events(add_event_ref)
+    if add_event_ref and G and G.E_MANAGER then
+        G.E_MANAGER.add_event = add_event_ref
+    end
+end
+
+function AG_UTIL.count_cards_destroyed_by_card(context, observer_card)
+    if not context or context.blueprint then
+        return 0
+    end
+
+    local source_card = context.source_card or AG_UTIL.current_card_destroy_source(observer_card)
+    if not source_card then
+        return 0
+    end
+
+    local destroyed_card = context.destroyed_card or context.card
+
+    if context.ag_card_destroyed_by_card and destroyed_card and destroyed_card ~= source_card then
+        return 1
+    end
+
+    if context.joker_type_destroyed
+        and destroyed_card
+        and destroyed_card ~= source_card
+        and not context.selling_self
+        and not destroyed_card.ag_destroy_reported_by_aspirant
+    then
+        return 1
+    end
+
+    if context.remove_playing_cards and type(context.removed) == 'table' then
+        local destroyed_count = 0
+
+        for _, removed_card in ipairs(context.removed) do
+            if removed_card and removed_card ~= source_card then
+                destroyed_count = destroyed_count + 1
+            end
+        end
+
+        return destroyed_count
+    end
+
+    return 0
+end
+
+function AG_UTIL.install_destroy_source_hooks()
+    if not Card then
+        return
+    end
+
+    if Card.calculate_joker and not AG.destroy_source_hooks_installed.calculate_joker then
+        local calculate_joker_ref = Card.calculate_joker
+
+        function Card:calculate_joker(context)
+            local tracked_jokers = nil
+
+            if G and G.jokers and G.jokers.cards then
+                tracked_jokers = {}
+
+                for _, joker in ipairs(G.jokers.cards) do
+                    tracked_jokers[joker] = joker.getting_sliced or false
+                end
+            end
+
+            local add_event_ref = AG_UTIL.wrap_destroy_source_events(self)
+            AG_UTIL.push_card_destroy_source(self)
+            local results = { calculate_joker_ref(self, context) }
+            AG_UTIL.pop_card_destroy_source(self)
+            AG_UTIL.unwrap_destroy_source_events(add_event_ref)
+
+            local effect = results[1]
+            local destroyed_target = context and (context.destroy_card or context.other_card)
+
+            if destroyed_target
+                and destroyed_target ~= self
+                and not context.ag_card_destroyed_by_card
+                and not destroyed_target.ag_card_destroy_source_reported
+                and effect
+                and effect.remove
+                and SMODS
+                and SMODS.calculate_context
+            then
+                destroyed_target.ag_card_destroy_source_reported = true
+                SMODS.calculate_context({
+                    ag_card_destroyed_by_card = true,
+                    source_card = self,
+                    destroyed_card = destroyed_target,
+                    card = destroyed_target,
+                })
+            end
+
+            if tracked_jokers and SMODS and SMODS.calculate_context then
+                for joker, was_getting_sliced in pairs(tracked_jokers) do
+                    if joker
+                        and joker ~= self
+                        and not was_getting_sliced
+                        and joker.getting_sliced
+                        and not joker.ag_destroy_reported_by_aspirant
+                        and not joker.ag_card_destroy_source_reported
+                    then
+                        joker.ag_card_destroy_source_reported = true
+                        SMODS.calculate_context({
+                            ag_card_destroyed_by_card = true,
+                            source_card = self,
+                            destroyed_card = joker,
+                            card = joker,
+                        })
+                    end
+                end
+            end
+
+            return unpack(results)
+        end
+
+        AG.destroy_source_hooks_installed.calculate_joker = true
+    end
+
+    if Card.use_consumeable and not AG.destroy_source_hooks_installed.use_consumeable then
+        local use_consumeable_ref = Card.use_consumeable
+
+        function Card:use_consumeable(...)
+            AG_UTIL.push_card_destroy_source(self)
+            local results = { use_consumeable_ref(self, ...) }
+            AG_UTIL.pop_card_destroy_source(self)
+            return unpack(results)
+        end
+
+        AG.destroy_source_hooks_installed.use_consumeable = true
+    end
+end
+
+AG_UTIL.install_destroy_source_hooks()
+
 function AG_UTIL.notify_card_created(source_card, created_card)
     if SMODS and SMODS.calculate_context and source_card and created_card then
         SMODS.calculate_context({
@@ -164,6 +360,7 @@ function AG_UTIL.destroy_card(card, opts)
     if SMODS and SMODS.calculate_context then
         SMODS.calculate_context({
             ag_lemurian_destroyed_card = opts.source_card and opts.source_card:is_lemurian() or false,
+            ag_card_destroyed_by_card = opts.source_card and opts.source_card ~= card or false,
             ag_card_self_destructed = self_destruct,
             source_card = opts.source_card,
             destroyed_card = card,
@@ -269,6 +466,104 @@ function AG_UTIL.get_arm_cards()
     end
 
     return arm_cards
+end
+
+function AG_UTIL.count_other_arm_cards(target_suffix)
+    local count = 0
+    local arm_cards = AG_UTIL.get_arm_cards()
+
+    for _, suffix in ipairs(AG_UTIL.arm_keys or {}) do
+        if suffix ~= target_suffix and arm_cards[suffix] then
+            count = count + 1
+        end
+    end
+
+    return count
+end
+
+function AG_UTIL.is_shop_or_booster_append(append)
+    return type(append) == 'string'
+        and (
+            append:find('sho', 1, true) ~= nil
+            or append:find('buf', 1, true) ~= nil
+        )
+end
+
+function AG_UTIL.is_uncommon_rarity(rarity)
+    return rarity == 2
+        or rarity == 'Uncommon'
+        or rarity == 'uncommon'
+end
+
+function AG_UTIL.is_uncommon_joker_poll(args)
+    if not args or args.type ~= 'Joker' or not AG_UTIL.is_shop_or_booster_append(args.append) then
+        return false
+    end
+
+    if AG_UTIL.is_uncommon_rarity(args.rarity) then
+        return true
+    end
+
+    if type(args.rarities) == 'table' then
+        for _, rarity in ipairs(args.rarities) do
+            if AG_UTIL.is_uncommon_rarity(rarity) then
+                return true
+            end
+        end
+
+        return false
+    end
+
+    return args.rarity == nil
+end
+
+function AG_UTIL.install_arm_commonness_weights()
+    if not (G and G.P_CENTERS) then
+        return
+    end
+
+    for _, suffix in ipairs(AG_UTIL.arm_keys or {}) do
+        local arm_suffix = suffix
+        local center = AG_UTIL.find_center_by_suffix('Joker', suffix)
+        local install_key = center and center.key
+
+        if center and install_key and not AG.arm_commonness.installed[install_key] then
+            local get_weight_ref = center.get_weight
+
+            center.get_weight = function(self, ...)
+                local weight = get_weight_ref and get_weight_ref(self, ...) or self.weight or 1
+
+                if AG.arm_commonness.polling_uncommon_joker then
+                    local boost_count = AG_UTIL.count_other_arm_cards(arm_suffix)
+
+                    if boost_count > 0 then
+                        return weight * (1 + (AG.arm_commonness.boost * boost_count))
+                    end
+                end
+
+                return weight
+            end
+
+            AG.arm_commonness.installed[install_key] = true
+        end
+    end
+end
+
+if SMODS and SMODS.poll_object then
+    local ag_arm_poll_object_ref = SMODS.poll_object
+
+    function SMODS.poll_object(args)
+        AG_UTIL.install_arm_commonness_weights()
+
+        local previous_polling_uncommon_joker = AG.arm_commonness.polling_uncommon_joker
+
+        AG.arm_commonness.polling_uncommon_joker = AG_UTIL.is_uncommon_joker_poll(args)
+
+        local center = ag_arm_poll_object_ref(args)
+        AG.arm_commonness.polling_uncommon_joker = previous_polling_uncommon_joker
+
+        return center
+    end
 end
 
 function AG_UTIL.try_combine_arms(trigger_card)

@@ -5,6 +5,8 @@ SMODS.Atlas({
     py = 93,
 })
 
+local AG_UTIL = (rawget(_G, 'Aspirant') or {}).joker_utils or {}
+
 local function get_destroyable_consumables()
     local consumables = {}
 
@@ -32,17 +34,26 @@ local function destroy_random_consumable(card)
     card.ability.extra.destroyed = card.ability.extra.destroyed + 1
     card.ability.extra.mult = card.ability.extra.mult + card.ability.extra.gain
 
-    G.E_MANAGER:add_event(Event({
-        trigger = 'after',
-        delay = 0.1,
-        func = function()
-            if target and not target.removed and not target.getting_sliced then
-                target.getting_sliced = true
-                target:start_dissolve(nil, true)
+    if AG_UTIL.destroy_card then
+        AG_UTIL.destroy_card(target, {
+            silent = true,
+            sound = false,
+            delay = 0.1,
+            source_card = card,
+        })
+    else
+        G.E_MANAGER:add_event(Event({
+            trigger = 'after',
+            delay = 0.1,
+            func = function()
+                if target and not target.removed and not target.getting_sliced then
+                    target.getting_sliced = true
+                    target:start_dissolve(nil, true)
+                end
+                return true
             end
-            return true
-        end
-    }))
+        }))
+    end
 
     return true
 end

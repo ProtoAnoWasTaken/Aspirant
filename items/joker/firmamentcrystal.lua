@@ -115,10 +115,6 @@ SMODS.Joker({
         return through_solid_ground_is_unlocked()
     end,
 
-    in_pool = function(self, args)
-        return G and G.GAME and G.GAME.ag_andromeda_self_destructed == true
-    end,
-
     calculate = function(self, card, context)
         if context.setting_blind
             and not context.blueprint
