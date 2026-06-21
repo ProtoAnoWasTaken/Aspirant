@@ -169,6 +169,40 @@ local loc = {
                 }
             },
         },
+    },
+    misc = {
+        v_text = {
+            ch_c_ag_artifact_boss_buffoon = {
+                'Create a {C:attention}Buffoon Tag{} after defeating a {C:attention}Boss Blind{}',
+            },
+            ch_c_ag_no_buffoon_packs = {
+                '{C:attention}Buffoon Packs{} no longer appear in the shop',
+            },
+            ch_c_ag_lolhoo_lifeline = {
+                'If {C:attention}Lolhoo{} expires, the run is lost',
+            },
+            ch_c_ag_food_jokers_only = {
+                'Only {C:attention}Food Jokers{} can appear',
+            },
+            ch_c_ag_erbario_only = {
+                'By playing this game, you have been infected',
+            },
+            ch_c_ag_erbario_only_2 = {
+                'with a mind virus that will slowly devour',
+            },
+            ch_c_ag_erbario_only_3 = {
+                'and consume you until nothing remains of your',
+            },
+            ch_c_ag_erbario_only_4 = {
+                'cognitive functions. The only antidote is to play',
+            },
+            ch_c_ag_erbario_only_5 = {
+                '{C:attention}ASPIRANT{}.',
+            },
+            ch_c_ag_woodworm_ante_ten = {
+                'Win at {C:attention}Ante 10{}',
+            },
+        },
     }
 }
 

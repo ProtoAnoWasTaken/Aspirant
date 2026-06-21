@@ -7,6 +7,13 @@ SMODS.Atlas({
 
 local AG_UTIL = (rawget(_G, 'Aspirant') or {}).joker_utils or {}
 
+local function is_warden_challenge()
+    return G and G.GAME and (
+        G.GAME.challenge == 'c_tk9g_warden_of_the_wretched'
+        or G.GAME.challenge == 'warden_of_the_wretched'
+    )
+end
+
 local function get_extra(card)
     return AG_UTIL.get_extra and AG_UTIL.get_extra(card) or nil
 end
@@ -84,6 +91,14 @@ SMODS.Joker({
     blueprint_compat = false,
     eternal_compat = false,
     perishable_compat = true,
+
+    in_pool = function(self, args)
+        if is_warden_challenge() then
+            return true, { override_base_checks = true }
+        end
+
+        return true
+    end,
 
     locked_loc_vars = function()
         return { key = "ag_unlock_discover_drommo", set = "Other" }

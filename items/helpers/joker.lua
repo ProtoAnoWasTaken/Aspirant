@@ -530,8 +530,11 @@ function AG_UTIL.install_arm_commonness_weights()
         if center and install_key and not AG.arm_commonness.installed[install_key] then
             local get_weight_ref = center.get_weight
 
-            center.get_weight = function(self, ...)
-                local weight = get_weight_ref and get_weight_ref(self, ...) or self.weight or 1
+            center.get_weight = function(self, base_weight, ...)
+                local weight = get_weight_ref and get_weight_ref(self, base_weight, ...)
+                    or base_weight
+                    or self.weight
+                    or 10
 
                 if AG.arm_commonness.polling_uncommon_joker then
                     local boost_count = AG_UTIL.count_other_arm_cards(arm_suffix)

@@ -111,12 +111,21 @@ if SMODS.poll_object then
     local ag_poll_object_ref = SMODS.poll_object
 
     function SMODS.poll_object(args)
-        if args and not args.allow_duplicates and hyperdontia_allows_duplicates(args.type, args.append) then
+        local allow_duplicates = args and hyperdontia_allows_duplicates(args.type, args.append)
+
+        if allow_duplicates and not args.allow_duplicates then
             args = copy_table(args)
             args.allow_duplicates = true
         end
 
-        return ag_poll_object_ref(args)
+        local previous = SMODS.poll_object_allow_duplicates
+        if allow_duplicates then
+            SMODS.poll_object_allow_duplicates = true
+        end
+
+        local result = ag_poll_object_ref(args)
+        SMODS.poll_object_allow_duplicates = previous
+        return result
     end
 end
 

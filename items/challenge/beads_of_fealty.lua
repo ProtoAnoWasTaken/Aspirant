@@ -18,7 +18,9 @@ SMODS.Challenge({
         type = 'Challenge Deck',
     },
     restrictions = {
-        banned_cards = {},
+        banned_cards = {
+            { id = 'j_oops' },
+        },
         banned_tags = {},
         banned_other = {},
     },
