@@ -171,6 +171,35 @@ local loc = {
         },
     },
     misc = {
+        quips = {
+            ag_banned_joker_created_1 = {
+                "Oh, I thought I was on the blacklist here.",
+            },
+            ag_banned_joker_created_2 = {
+                "Ain't this awkward?",
+            },
+            ag_banned_joker_created_3 = {
+                "Hope the anticheat beast doesn't get ya!",
+            },
+            ag_banned_joker_created_4 = {
+                "Between you and me...",
+                "...absolutely do NOT tell the Challenge menu.",
+            },
+            ag_banned_joker_purchased_1 = {
+                "Hey, you don't have the badge for me yet!",
+            },
+            ag_banned_joker_purchased_2 = {
+                "I never knew I could be contraband.",
+            },
+            ag_banned_joker_purchased_3 = {
+                "No refunds.",
+                "Especially not for fugitives.",
+            },
+            ag_banned_joker_purchased_4 = {
+                "You saw the ban list, right?",
+                "...right?",
+            },
+        },
         v_text = {
             ch_c_ag_artifact_boss_buffoon = {
                 'Create a {C:attention}Buffoon Tag{} after defeating a {C:attention}Boss Blind{}',

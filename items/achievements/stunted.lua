@@ -19,7 +19,7 @@ SMODS.Achievement({
         name = 'Stunted',
         description = {
             'Prevent an Erbario',
-            'from {C:red,E:2}self destructing{}',
+            'from self destructing',
         },
     },
     unlock_condition = function(self, args)
