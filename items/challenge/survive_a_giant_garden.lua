@@ -43,7 +43,9 @@ SMODS.Challenge({
         { id = 'j_tk9g_lolhoo', eternal = true },
     },
     consumeables = {},
-    vouchers = {},
+    vouchers = {
+        { id = 'v_tk9g_hyperdontia' },
+    },
     deck = {
         type = 'Challenge Deck',
     },
