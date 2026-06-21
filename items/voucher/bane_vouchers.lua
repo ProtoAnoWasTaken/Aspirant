@@ -85,6 +85,7 @@ function create_card(type_key, area, legendary, rarity, skip_materialize, soulab
     install_cyclopea_polychrome_weight()
 
     local forced_center = forced_key and G.P_CENTERS and G.P_CENTERS[forced_key]
+    type_key = type_key or (forced_center and forced_center.set)
     local polling_joker_edition = type_key == 'Joker' or (forced_center and forced_center.set == 'Joker')
     local allow_shop_duplicates = not forced_key and area == G.shop_jokers and hyperdontia_allows_duplicates(type_key, key_append)
     local previous_polling_joker_edition = AG.voucher_effects.polling_joker_edition
