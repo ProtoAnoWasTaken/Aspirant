@@ -20,6 +20,7 @@ SMODS.Challenge({
         custom = {
             { id = 'ag_artifact_boss_buffoon' },
             { id = 'ag_no_buffoon_packs' },
+            { id = 'no_shop_jokers' },
         },
         modifiers = {},
     },

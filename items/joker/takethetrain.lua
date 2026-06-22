@@ -147,9 +147,7 @@ end
 
 local function hand_scores_face_card(scoring_hand)
     for _, playing_card in ipairs(scoring_hand or {}) do
-        local id = playing_card and playing_card.get_id and playing_card:get_id() or nil
-
-        if id and id >= 11 and id <= 13 then
+        if playing_card and playing_card.is_face and playing_card:is_face() then
             return true
         end
     end
