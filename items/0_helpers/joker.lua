@@ -266,14 +266,18 @@ function AG_UTIL.install_destroy_source_hooks()
             AG_UTIL.unwrap_destroy_source_events(add_event_ref)
 
             local effect = results[1]
-            local destroyed_target = context and (context.destroy_card or context.other_card)
+            local destroyed_target = context and (context.destroy_card or context.destroying_card or context.other_card)
+            local effect_removes_target = type(effect) == 'table' and effect.remove
+
+            if not effect_removes_target and effect == true and context and context.destroying_card then
+                effect_removes_target = true
+            end
 
             if destroyed_target
                 and destroyed_target ~= self
                 and not context.ag_card_destroyed_by_card
                 and not destroyed_target.ag_card_destroy_source_reported
-                and effect
-                and effect.remove
+                and effect_removes_target
                 and SMODS
                 and SMODS.calculate_context
             then
