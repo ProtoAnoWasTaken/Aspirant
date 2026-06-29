@@ -48,7 +48,6 @@ local AG = Aspirant
 
 AG.test_deck = AG.test_deck or {}
 AG.config = AG_CONFIG
-AG.joker_sort_infos = AG.joker_sort_infos or nil
 AG.item_sort_info_cache = AG.item_sort_info_cache or {}
 
 function AG.is_main_menu()
@@ -709,14 +708,14 @@ end
 local MOD_ID    = "Aspirant"
 local FS_PREFIX = "Mods/" .. MOD_ID .. "/"
 
-local function ag_parse_named_sort_info(rel_path, fs_item_path)
+local function ag_parse_named_sort_infos(rel_path, fs_item_path)
     local contents = love.filesystem.read(fs_item_path)
     if not contents then
-        return nil
+        return {}
     end
 
-    local center_type = nil
-    local block = nil
+    local sort_infos = {}
+    local source_index = 0
 
     for _, object_type in ipairs({
         "Joker",
@@ -729,98 +728,54 @@ local function ag_parse_named_sort_info(rel_path, fs_item_path)
         "Booster",
         "Tag",
         "Achievement",
+        "Challenge",
         "Consumable",
+        "Edition",
+        "Enhancement",
+        "ObjectType",
     }) do
-        local matched_block = contents:match("SMODS%." .. object_type .. "%s*%(%s*(%b{})")
-        if matched_block then
-            center_type = object_type
-            block = matched_block
-            break
-        end
-    end
+        for block in contents:gmatch("SMODS%." .. object_type .. "%s*%(%s*(%b{})") do
+            source_index = source_index + 1
+            local rarity = tonumber(block:match("rarity%s*=%s*(%d+)")) or 999
+            local order = tonumber(block:match("order%s*=%s*(%-?%d+%.?%d*)"))
+            local name = block:match("name%s*=%s*'([^']+)'")
+                or block:match('name%s*=%s*"([^"]+)"')
+                or block:match("loc_txt%s*=%s*%b{}.-name%s*=%s*'([^']+)'")
+                or block:match('loc_txt%s*=%s*%b{}.-name%s*=%s*"([^"]+)"')
+                or rel_path
+            local key = block:match("key%s*=%s*'([^']+)'") or block:match('key%s*=%s*"([^"]+)"')
 
-    if not block then
-        return nil
-    end
-
-    local rarity = tonumber(block:match("rarity%s*=%s*(%d+)")) or 999
-    local name = block:match("name%s*=%s*'([^']+)'")
-        or block:match('name%s*=%s*"([^"]+)"')
-        or block:match("loc_txt%s*=%s*%b{}.-name%s*=%s*'([^']+)'")
-        or block:match('loc_txt%s*=%s*%b{}.-name%s*=%s*"([^"]+)"')
-        or rel_path
-
-    return {
-        rel_path = rel_path,
-        key = block:match("key%s*=%s*'([^']+)'") or block:match('key%s*=%s*"([^"]+)"'),
-        object_type = center_type,
-        rarity = rarity,
-        name = name:lower(),
-    }
-end
-
-local function ag_get_item_sort_info(rel_path, fs_item_path)
-    local cache_key = rel_path:lower()
-    if AG.item_sort_info_cache[cache_key] ~= nil then
-        return AG.item_sort_info_cache[cache_key] or nil
-    end
-
-    local sort_info = ag_parse_named_sort_info(rel_path, fs_item_path)
-    AG.item_sort_info_cache[cache_key] = sort_info or false
-    return sort_info
-end
-
-local function ag_get_joker_sort_info(rel_path, fs_item_path)
-    if not rel_path:match("^items/joker/") then
-        return nil
-    end
-
-    local sort_info = ag_get_item_sort_info(rel_path, fs_item_path)
-    if sort_info and sort_info.object_type == "Joker" then
-        return sort_info
-    end
-
-    return nil
-end
-
-local function ag_collect_joker_sort_infos(rel_folder, out)
-    local fs_path = FS_PREFIX .. rel_folder
-    if not love.filesystem.getInfo(fs_path) then
-        return out
-    end
-
-    for _, item in ipairs(love.filesystem.getDirectoryItems(fs_path)) do
-        local rel_path = rel_folder .. "/" .. item
-        local fs_item_path = FS_PREFIX .. rel_path
-        local info = love.filesystem.getInfo(fs_item_path)
-
-        if info then
-            if info.type == "directory" then
-                ag_collect_joker_sort_infos(rel_path, out)
-            elseif info.type == "file" and item:lower():match("%.lua$") then
-                local joker_info = ag_get_joker_sort_info(rel_path, fs_item_path)
-                if joker_info then
-                    out[#out + 1] = joker_info
-                end
+            if key then
+                sort_infos[#sort_infos + 1] = {
+                    rel_path = rel_path,
+                    source_index = source_index,
+                    key = key,
+                    object_type = object_type,
+                    order = order,
+                    rarity = rarity,
+                    name = name:lower(),
+                }
             end
         end
     end
 
-    return out
+    return sort_infos
 end
 
-local function ag_sort_joker_infos(joker_infos)
-    table.sort(joker_infos, function(a, b)
-        if a.rarity ~= b.rarity then
-            return a.rarity < b.rarity
-        end
+local function ag_get_item_sort_infos(rel_path, fs_item_path)
+    local cache_key = rel_path:lower()
+    if AG.item_sort_info_cache[cache_key] ~= nil then
+        return AG.item_sort_info_cache[cache_key] or {}
+    end
 
-        if a.name ~= b.name then
-            return a.name < b.name
-        end
+    local sort_infos = ag_parse_named_sort_infos(rel_path, fs_item_path)
+    AG.item_sort_info_cache[cache_key] = sort_infos
+    return sort_infos
+end
 
-        return a.rel_path:lower() < b.rel_path:lower()
-    end)
+local function ag_get_item_sort_info(rel_path, fs_item_path)
+    local sort_infos = ag_get_item_sort_infos(rel_path, fs_item_path)
+    return sort_infos[1]
 end
 
 local function ag_compare_item_sort_info(a, b)
@@ -828,8 +783,20 @@ local function ag_compare_item_sort_info(a, b)
         return tostring(a.object_type) < tostring(b.object_type)
     end
 
+    if a.order or b.order then
+        local order_a = a.order or 999999
+        local order_b = b.order or 999999
+        if order_a ~= order_b then
+            return order_a < order_b
+        end
+    end
+
     if a.rarity ~= b.rarity then
         return a.rarity < b.rarity
+    end
+
+    if a.rel_path == b.rel_path and a.source_index ~= b.source_index then
+        return a.source_index < b.source_index
     end
 
     if a.name ~= b.name then
@@ -839,143 +806,136 @@ local function ag_compare_item_sort_info(a, b)
     return a.rel_path:lower() < b.rel_path:lower()
 end
 
-local function ag_get_cached_joker_sort_infos()
-    if AG.joker_sort_infos then
-        return AG.joker_sort_infos
-    end
-
-    local joker_infos = ag_collect_joker_sort_infos("items/joker", {})
-    ag_sort_joker_infos(joker_infos)
-    AG.joker_sort_infos = joker_infos
-    return joker_infos
-end
-
-local function ag_find_joker_center(sort_info)
-    if not sort_info or not sort_info.key or not G or not G.P_CENTERS then
+local function ag_get_collection_mod(center)
+    local mod = center and (center.mod or center.original_mod)
+    if not mod or mod.id == "Balatro" or mod.id == "Steamodded" then
         return nil
     end
-
-    local suffix = sort_info.key
-
-    for _, center in pairs(G.P_CENTERS) do
-        if center
-            and center.set == "Joker"
-            and (
-                center.original_key == suffix
-                or center.key == suffix
-                or (type(center.key) == "string" and center.key:match(suffix .. "$") ~= nil)
-            )
-        then
-            return center
-        end
-    end
-
-    return nil
+    return mod
 end
 
-local function ag_center_matches_sort_info(center, sort_info)
-    local suffix = sort_info and sort_info.key
-    if not center or not suffix then
-        return false
-    end
-
-    return center.original_key == suffix
-        or center.key == suffix
-        or (type(center.key) == "string" and center.key:match(suffix .. "$") ~= nil)
+local function ag_get_collection_mod_priority(mod)
+    return tonumber(mod and mod.priority)
+        or tonumber(mod and mod.manifest and mod.manifest.priority)
+        or 0
 end
 
-local function ag_center_matches_any_sort_info(center, joker_infos)
-    for _, sort_info in ipairs(joker_infos or {}) do
-        if ag_center_matches_sort_info(center, sort_info) then
+local function ag_get_collection_sort_rarity(center)
+    return tonumber(center and center.rarity) or 999
+end
+
+local function ag_get_collection_sort_name(center)
+    return tostring((center and (center.name or center.original_key or center.key)) or ""):lower()
+end
+
+local function ag_compare_collection_entries(a, b)
+    if a.mod ~= b.mod then
+        if not a.mod then
             return true
         end
-    end
-
-    return false
-end
-
-local function ag_apply_joker_order(sort_info, index)
-    local center = ag_find_joker_center(sort_info)
-
-    if center then
-        center.order = index
-    end
-
-    if SMODS and SMODS.Jokers then
-        for _, joker in pairs(SMODS.Jokers) do
-            if ag_center_matches_sort_info(joker, sort_info) then
-                joker.order = index
-            end
+        if not b.mod then
+            return false
         end
-    end
-end
 
-local function ag_get_joker_order_base(joker_infos)
-    local max_order = 0
-    local seen = {}
-    local sources = {
-        G and G.P_CENTER_POOLS and G.P_CENTER_POOLS.Joker,
-        G and G.P_CENTERS,
-        SMODS and SMODS.Jokers,
-    }
+        local priority_a = ag_get_collection_mod_priority(a.mod)
+        local priority_b = ag_get_collection_mod_priority(b.mod)
+        if priority_a ~= priority_b then
+            return priority_a < priority_b
+        end
 
-    for _, source in ipairs(sources) do
-        if source then
-            for _, center in pairs(source) do
-                if center
-                    and center.set == "Joker"
-                    and not ag_center_matches_any_sort_info(center, joker_infos)
-                then
-                    local key = tostring(center.key or center.original_key or center.name or center)
-
-                    if not seen[key] then
-                        seen[key] = true
-                        max_order = math.max(max_order, tonumber(center.order) or 0)
-                    end
-                end
-            end
+        local id_a = tostring(a.mod.id or "")
+        local id_b = tostring(b.mod.id or "")
+        if id_a ~= id_b then
+            return id_a < id_b
         end
     end
 
-    return max_order
-end
-
-local function ag_sort_joker_pool()
-    local pool = G and G.P_CENTER_POOLS and G.P_CENTER_POOLS.Joker
-    if not pool then
-        return
-    end
-
-    table.sort(pool, function(a, b)
-        local order_a = (a and a.order) or 999999
-        local order_b = (b and b.order) or 999999
-
-        if order_a ~= order_b then
-            return order_a < order_b
+    if a.mod and b.mod then
+        local rarity_a = ag_get_collection_sort_rarity(a.center)
+        local rarity_b = ag_get_collection_sort_rarity(b.center)
+        if rarity_a ~= rarity_b then
+            return rarity_a < rarity_b
         end
 
-        local name_a = (a and a.name and tostring(a.name):lower()) or ""
-        local name_b = (b and b.name and tostring(b.name):lower()) or ""
-
+        local name_a = ag_get_collection_sort_name(a.center)
+        local name_b = ag_get_collection_sort_name(b.center)
         if name_a ~= name_b then
             return name_a < name_b
         end
-
-        local key_a = (a and a.key and tostring(a.key):lower()) or ""
-        local key_b = (b and b.key and tostring(b.key):lower()) or ""
-        return key_a < key_b
-    end)
-end
-
-local function ag_normalize_joker_collection_order()
-    local joker_infos = ag_get_cached_joker_sort_infos()
-    local base_order = ag_get_joker_order_base(joker_infos)
-
-    for index, sort_info in ipairs(joker_infos) do
-        ag_apply_joker_order(sort_info, base_order + index)
     end
 
-    ag_sort_joker_pool()
+    return a.index < b.index
+end
+
+local function ag_reorder_center_pool(pool)
+    if type(pool) ~= "table" or not pool[1] then
+        return
+    end
+
+    local entries = {}
+    for index, center in ipairs(pool) do
+        entries[index] = {
+            center = center,
+            mod = ag_get_collection_mod(center),
+            index = index,
+        }
+    end
+
+    table.sort(entries, ag_compare_collection_entries)
+
+    local mod_counts = {}
+    for index, entry in ipairs(entries) do
+        if entry.mod then
+            local mod_key = tostring(entry.mod.id or entry.mod)
+            mod_counts[mod_key] = (mod_counts[mod_key] or 0) + 1
+            entry.center.order = 1000000000 + ag_get_collection_mod_priority(entry.mod) + (mod_counts[mod_key] / 10000)
+        end
+        pool[index] = entry.center
+    end
+end
+
+local function ag_reorder_keyed_collection(collection)
+    if type(collection) ~= "table" then
+        return
+    end
+
+    local entries = {}
+    for key, center in pairs(collection) do
+        local mod = ag_get_collection_mod(center)
+        if mod then
+            entries[#entries + 1] = {
+                center = center,
+                mod = mod,
+                index = tonumber(center.order) or #entries + 1,
+                key = tostring(key),
+            }
+        end
+    end
+
+    table.sort(entries, function(a, b)
+        if ag_compare_collection_entries(a, b) then
+            return true
+        end
+        if ag_compare_collection_entries(b, a) then
+            return false
+        end
+        return a.key < b.key
+    end)
+
+    for index, entry in ipairs(entries) do
+        entry.center.order = 1000000000 + ag_get_collection_mod_priority(entry.mod) + (index / 10000)
+    end
+end
+
+local function ag_normalize_collection_order()
+    if G and G.P_CENTER_POOLS then
+        for _, pool in pairs(G.P_CENTER_POOLS) do
+            ag_reorder_center_pool(pool)
+        end
+    end
+
+    ag_reorder_keyed_collection(G and G.P_TAGS)
+    ag_reorder_keyed_collection(G and G.P_BLINDS)
 end
 
 local function ag_recheck_unlocks()
@@ -1041,7 +1001,7 @@ local function ag_recheck_unlocks()
         AG.timebuilder_deck.sync_unlock_state()
     end
 
-    ag_normalize_joker_collection_order()
+    ag_normalize_collection_order()
 end
 
 local function ag_install_unlock_recheck_hook()
@@ -1115,7 +1075,7 @@ end
 
 load_folder("localization")
 load_folder("items")
-ag_normalize_joker_collection_order()
+ag_normalize_collection_order()
 ag_install_unlock_recheck_hook()
 
 AG.test_deck.sync_availability()
@@ -1165,7 +1125,7 @@ if G and G.UIDEF and G.UIDEF.run_setup_option then
     local ag_run_setup_option_ref = G.UIDEF.run_setup_option
     function G.UIDEF.run_setup_option(type)
         AG.test_deck.sync_availability()
-        ag_normalize_joker_collection_order()
+        ag_normalize_collection_order()
         return ag_run_setup_option_ref(type)
     end
 end
@@ -1182,7 +1142,7 @@ local ag_card_click_ref = Card.click
 
 function Card:click(...)
     if ag_is_collection_card(self) then
-        ag_normalize_joker_collection_order()
+        ag_normalize_collection_order()
     end
 
     if ag_is_collection_card(self) and AG.test_deck.try_summon(self) then
