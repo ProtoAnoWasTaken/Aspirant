@@ -552,7 +552,14 @@ local function ag_spawn_tag(source_card)
     return true
 end
 
-local function ag_get_hovered_tag_source()
+local function ag_is_collection_tag_source(candidate)
+    return candidate
+        and candidate.config
+        and candidate.config.ag_collection_tag
+        and ag_find_tag_center(candidate)
+end
+
+local function ag_get_hovered_tag_source(collection_only)
     local controller = G and G.CONTROLLER or nil
     local candidates = {
         controller and controller.hovering,
@@ -565,7 +572,9 @@ local function ag_get_hovered_tag_source()
     for _, candidate in ipairs(candidates) do
         if type(candidate) == "table" and not seen[candidate] then
             seen[candidate] = true
-            if ag_find_tag_center(candidate) then
+            if collection_only and ag_is_collection_tag_source(candidate) then
+                return candidate
+            elseif not collection_only and ag_find_tag_center(candidate) then
                 return candidate
             end
         end
@@ -579,7 +588,11 @@ local function ag_try_clone_hovered_tag()
         return false
     end
 
-    local hovered_source = ag_get_hovered_tag_source()
+    if not (G and G.OVERLAY_MENU and G.SETTINGS and G.SETTINGS.paused) then
+        return false
+    end
+
+    local hovered_source = ag_get_hovered_tag_source(true)
     if not hovered_source then
         return false
     end
@@ -1156,6 +1169,29 @@ function Card:click(...)
     end
 
     return ag_card_click_ref(self, ...)
+end
+
+if Tag and Tag.init then
+    local ag_tag_init_ref = Tag.init
+
+    function Tag:init(_tag, for_collection, ...)
+        ag_tag_init_ref(self, _tag, for_collection, ...)
+        self.ag_collection_tag = not not for_collection
+    end
+end
+
+if Tag and Tag.generate_UI then
+    local ag_tag_generate_UI_ref = Tag.generate_UI
+
+    function Tag:generate_UI(...)
+        local tag_sprite_tab, tag_sprite = ag_tag_generate_UI_ref(self, ...)
+
+        if self.ag_collection_tag and tag_sprite and tag_sprite.config then
+            tag_sprite.config.ag_collection_tag = true
+        end
+
+        return tag_sprite_tab, tag_sprite
+    end
 end
 
 if love then
