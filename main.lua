@@ -872,6 +872,10 @@ local function ag_reorder_center_pool(pool)
         return
     end
 
+    if pool[1].set == "Voucher" then
+        return
+    end
+
     local entries = {}
     for index, center in ipairs(pool) do
         entries[index] = {
