@@ -4,7 +4,7 @@ SMODS.Atlas({
     px = 34,
     py = 34,
     atlas_table = 'ANIMATION_ATLAS',
-    frames = 1,
+    frames = 21,
 })
 
 local function get_total_consumables_used()
