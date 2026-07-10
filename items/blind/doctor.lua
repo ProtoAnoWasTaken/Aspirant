@@ -3,6 +3,8 @@ SMODS.Atlas({
     path = 'blind_doctor.png',
     px = 34,
     py = 34,
+    atlas_table = 'ANIMATION_ATLAS',
+    frames = 1,
 })
 
 local function doctor_is_playing_card(card)

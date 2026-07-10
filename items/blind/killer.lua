@@ -3,6 +3,8 @@ SMODS.Atlas({
     path = 'blind_killer.png',
     px = 34,
     py = 34,
+    atlas_table = 'ANIMATION_ATLAS',
+    frames = 1,
 })
 
 local AG_UTIL = (rawget(_G, 'Aspirant') or {}).joker_utils or {}

@@ -3,6 +3,8 @@ SMODS.Atlas({
     path = 'blind_collector.png',
     px = 34,
     py = 34,
+    atlas_table = 'ANIMATION_ATLAS',
+    frames = 1,
 })
 
 local function collector_is_uncommon_joker(card)

@@ -3,6 +3,8 @@ SMODS.Atlas({
     path = 'blind_guard.png',
     px = 34,
     py = 34,
+    atlas_table = 'ANIMATION_ATLAS',
+    frames = 1,
 })
 
 local AG_GUARD = rawget(_G, 'Aspirant') or {}
