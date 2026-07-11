@@ -6,6 +6,12 @@ SMODS.Atlas({
     py = 93,
 })
 
+-- Steamodded still points Pinned at an empty placeholder cell. The current
+-- stickers atlas includes its artwork alongside the other base stickers.
+if SMODS.Stickers and SMODS.Stickers.pinned then
+    SMODS.Stickers.pinned.pos = { x = 2, y = 2 }
+end
+
 SMODS.Atlas({
     key = 'citron_orange',
     prefix_config = { key = false },
@@ -82,16 +88,16 @@ local function ensure_pinned(card)
 
     if extra
         and extra.ag_pin_applied
-        and card.pinned
+        and card.sticker == 'pinned'
         and (not drag_state or drag_state.can == false)
     then
         return
     end
 
-    card.pinned = true
-    if card.sticker == 'pinned' then
-        card.sticker = nil
-    end
+    -- This deliberately uses the sticker artwork without native `card.pinned`:
+    -- native pinning would also prevent Citron Roller from moving itself.
+    card.pinned = false
+    card.sticker = 'pinned'
     if extra then
         extra.ag_pin_applied = true
     end
