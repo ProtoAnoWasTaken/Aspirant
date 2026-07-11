@@ -82,14 +82,16 @@ local function ensure_pinned(card)
 
     if extra
         and extra.ag_pin_applied
-        and card.sticker == 'pinned'
+        and card.pinned
         and (not drag_state or drag_state.can == false)
     then
         return
     end
 
-    card.pinned = false
-    card.sticker = 'pinned'
+    card.pinned = true
+    if card.sticker == 'pinned' then
+        card.sticker = nil
+    end
     if extra then
         extra.ag_pin_applied = true
     end

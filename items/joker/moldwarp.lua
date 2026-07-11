@@ -11,6 +11,7 @@ local AG = Aspirant
 local AG_UTIL = AG.joker_utils or {}
 local GOLD_CENTER_KEY = 'm_gold'
 local LUCKY_CENTER_KEY = 'm_lucky'
+local GOLDEN_TICKET_KEY = 'j_ticket'
 
 AG.moldwarp_state = AG.moldwarp_state or {}
 
@@ -67,6 +68,28 @@ local function peldan_is_discovered()
     return AG_UTIL.is_center_discovered
         and AG_UTIL.is_center_discovered('Joker', 'peldan')
         or false
+end
+
+local function get_golden_ticket_bonus()
+    if not G or not G.jokers or not G.jokers.cards then
+        return 0
+    end
+
+    local bonus = 0
+
+    for _, joker in ipairs(G.jokers.cards) do
+        local center = joker and joker.config and joker.config.center
+        if joker
+            and not joker.debuff
+            and not joker.getting_sliced
+            and center
+            and center.key == GOLDEN_TICKET_KEY
+        then
+            bonus = bonus + (center.config and center.config.extra or 0)
+        end
+    end
+
+    return bonus
 end
 
 function AG.refresh_moldwarp_state(ignore_card)
@@ -189,6 +212,25 @@ SMODS.Joker({
         end
 
         AG.ensure_moldwarp_state_current()
+
+        if context.individual
+            and context.cardarea == G.play
+            and context.other_card
+            and SMODS.has_enhancement(context.other_card, GOLD_CENTER_KEY)
+            and AG.moldwarp_state
+            and AG.moldwarp_state.active_joker == card
+            and AG.moldwarp_state.multiplier
+            and AG.moldwarp_state.multiplier > 1
+        then
+            local golden_ticket_bonus = get_golden_ticket_bonus()
+                * (AG.moldwarp_state.multiplier - 1)
+
+            if golden_ticket_bonus > 0 then
+                return {
+                    dollars = golden_ticket_bonus,
+                }
+            end
+        end
 
         if context.fix_probability
             and AG.moldwarp_state

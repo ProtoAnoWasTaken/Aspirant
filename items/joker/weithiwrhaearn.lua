@@ -165,9 +165,21 @@ local function create_rare_joker(source_card)
 end
 
 local function forge(card)
-    local consumable = pseudorandom_element(get_destroyable_consumables(), pseudoseed('ag_weithiwrhaearn_consumable'))
-    local common_joker = pseudorandom_element(get_destroyable_jokers(card, is_common_joker), pseudoseed('ag_weithiwrhaearn_common'))
-    local uncommon_joker = pseudorandom_element(get_destroyable_jokers(card, is_uncommon_joker), pseudoseed('ag_weithiwrhaearn_uncommon'))
+    local consumables = get_destroyable_consumables()
+    local common_jokers = get_destroyable_jokers(card, is_common_joker)
+    local uncommon_jokers = get_destroyable_jokers(card, is_uncommon_joker)
+
+    -- Multiplayer's TheOrder compatibility wrapper expects every random pool to
+    -- contain at least one keyed card. Materials can disappear between the
+    -- readiness check and this deferred calculation, so do not pass an empty
+    -- pool through pseudorandom_element.
+    if #consumables == 0 or #common_jokers == 0 or #uncommon_jokers == 0 then
+        return nil
+    end
+
+    local consumable = pseudorandom_element(consumables, pseudoseed('ag_weithiwrhaearn_consumable'))
+    local common_joker = pseudorandom_element(common_jokers, pseudoseed('ag_weithiwrhaearn_common'))
+    local uncommon_joker = pseudorandom_element(uncommon_jokers, pseudoseed('ag_weithiwrhaearn_uncommon'))
 
     if not consumable or not common_joker or not uncommon_joker then
         return nil
