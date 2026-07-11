@@ -563,22 +563,28 @@ if SMODS and SMODS.poll_object then
         AG_UTIL.install_arm_commonness_weights()
 
         local previous_polling_uncommon_joker = AG.arm_commonness.polling_uncommon_joker
-        local initialized_joker_cards = false
+        local initialized_card_areas = {}
 
         AG.arm_commonness.polling_uncommon_joker = AG_UTIL.is_uncommon_joker_poll(args)
 
         -- Steamodded evaluates the modify_weights Joker context while the run's
-        -- initial boss is being polled. At that point G.jokers exists, but its
-        -- cards table may not have been initialized yet.
-        if G and G.jokers and G.jokers.cards == nil then
-            G.jokers.cards = {}
-            initialized_joker_cards = true
+        -- initial boss is being polled. Standard and modded Joker-evaluation
+        -- areas may exist before their card lists do.
+        local joker_areas = SMODS.get_card_areas
+            and SMODS.get_card_areas('jokers')
+            or (G and { G.jokers, G.consumeables, G.vouchers } or {})
+
+        for _, area in pairs(joker_areas or {}) do
+            if area and area.cards == nil then
+                area.cards = {}
+                initialized_card_areas[#initialized_card_areas + 1] = area
+            end
         end
 
         local success, center = pcall(ag_arm_poll_object_ref, args)
 
-        if initialized_joker_cards then
-            G.jokers.cards = nil
+        for _, area in ipairs(initialized_card_areas) do
+            area.cards = nil
         end
 
         AG.arm_commonness.polling_uncommon_joker = previous_polling_uncommon_joker
