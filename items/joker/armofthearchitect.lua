@@ -94,7 +94,7 @@ SMODS.Joker({
             }
         end
 
-        if context.joker_main and get_mult(card) > 0 then
+        if context.joker_main and Aspirant.joker_utils.is_positive(get_mult(card)) then
             return {
                 mult_mod = get_mult(card),
                 message = '+' .. tostring(get_mult(card)),

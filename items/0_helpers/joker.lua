@@ -19,6 +19,37 @@ AG.destroy_source_hooks_installed = AG.destroy_source_hooks_installed or {}
 
 local AG_UTIL = AG.joker_utils
 
+function AG_UTIL.to_big(value)
+    if type(_G.to_big) == 'function' then
+        return _G.to_big(value or 0)
+    end
+
+    return value or 0
+end
+
+
+function AG_UTIL.compare_numbers(left, operator, right)
+    left = AG_UTIL.to_big(left)
+    right = AG_UTIL.to_big(right)
+
+    if operator == 'gt' then return left > right end
+    if operator == 'gte' then return left >= right end
+    if operator == 'lt' then return left < right end
+    if operator == 'lte' then return left <= right end
+    if operator == 'eq' then return left == right end
+    if operator == 'neq' then return left ~= right end
+
+    return false
+end
+
+function AG_UTIL.is_positive(value)
+    return AG_UTIL.compare_numbers(value, 'gt', 0)
+end
+
+function AG_UTIL.is_nonzero(value)
+    return AG_UTIL.compare_numbers(value, 'neq', 0)
+end
+
 function AG_UTIL.get_extra(card)
     if not card then
         return nil
@@ -61,6 +92,10 @@ function AG_UTIL.is_center_discovered(set_name, suffix)
 end
 
 function AG_UTIL.format_xmult(value)
+    if type(value) == 'table' and number_format then
+        return number_format(value)
+    end
+
     local formatted = string.format('%.2f', value)
     formatted = formatted:gsub('(%..-)0+$', '%1')
     return formatted:gsub('%.$', '')

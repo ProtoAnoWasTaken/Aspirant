@@ -8,6 +8,16 @@ SMODS.Atlas({
 local AG = rawget(_G, 'Aspirant') or {}
 local AG_UTIL = AG.joker_utils or {}
 
+local function compare_numbers(left, operator, right)
+    if AG_UTIL.compare_numbers then
+        return AG_UTIL.compare_numbers(left, operator, right)
+    end
+
+    if operator == 'gt' then return left > right end
+    if operator == 'neq' then return left ~= right end
+    return false
+end
+
 local function get_rank(card)
     if not card then
         return nil
@@ -117,42 +127,42 @@ local function get_held_trigger_effect(card)
     local effect = {}
 
     local h_mult = card:get_chip_h_mult()
-    if h_mult ~= 0 then
+    if compare_numbers(h_mult, 'neq', 0) then
         effect.h_mult = h_mult
     end
 
     local h_x_mult = card:get_chip_h_x_mult()
-    if h_x_mult > 1 then
+    if compare_numbers(h_x_mult, 'gt', 1) then
         effect.x_mult = h_x_mult
     end
 
     local h_chips = card:get_chip_h_bonus()
-    if h_chips ~= 0 then
+    if compare_numbers(h_chips, 'neq', 0) then
         effect.h_chips = h_chips
     end
 
     local h_x_chips = card:get_chip_h_x_bonus()
-    if h_x_chips > 1 then
+    if compare_numbers(h_x_chips, 'gt', 1) then
         effect.x_chips = h_x_chips
     end
 
     local h_score = card:get_bonus_h_score()
-    if h_score ~= 0 then
+    if compare_numbers(h_score, 'neq', 0) then
         effect.h_score = h_score
     end
 
     local h_x_score = card:get_bonus_h_x_score()
-    if h_x_score > 1 then
+    if compare_numbers(h_x_score, 'gt', 1) then
         effect.h_x_score = h_x_score
     end
 
     local h_blind_size = card:get_bonus_h_blind_size()
-    if h_blind_size ~= 0 then
+    if compare_numbers(h_blind_size, 'neq', 0) then
         effect.blind_size = h_blind_size
     end
 
     local h_x_blind_size = card:get_bonus_h_x_blind_size()
-    if h_x_blind_size > 1 then
+    if compare_numbers(h_x_blind_size, 'gt', 1) then
         effect.x_blind_size = h_x_blind_size
     end
 
@@ -172,7 +182,7 @@ local function get_scored_trigger_effect(card, context)
         try_trigger_glass_break(card)
 
         local x_mult = card.ability.x_mult or 1
-        if x_mult > 1 then
+        if compare_numbers(x_mult, 'gt', 1) then
             return {
                 x_mult = x_mult,
             }
@@ -184,47 +194,47 @@ local function get_scored_trigger_effect(card, context)
     local effect = {}
 
     local chips = card:get_chip_bonus()
-    if chips ~= 0 then
+    if compare_numbers(chips, 'neq', 0) then
         effect.chips = chips
     end
 
     local mult = card:get_chip_mult()
-    if mult ~= 0 then
+    if compare_numbers(mult, 'neq', 0) then
         effect.mult = mult
     end
 
     local x_mult = card:get_chip_x_mult(context)
-    if x_mult > 1 then
+    if compare_numbers(x_mult, 'gt', 1) then
         effect.x_mult = x_mult
     end
 
     local p_dollars = card:get_p_dollars()
-    if p_dollars ~= 0 then
+    if compare_numbers(p_dollars, 'neq', 0) then
         effect.p_dollars = p_dollars
     end
 
     local x_chips = card:get_chip_x_bonus()
-    if x_chips > 1 then
+    if compare_numbers(x_chips, 'gt', 1) then
         effect.x_chips = x_chips
     end
 
     local score = card:get_bonus_score()
-    if score ~= 0 then
+    if compare_numbers(score, 'neq', 0) then
         effect.score = score
     end
 
     local x_score = card:get_bonus_x_score()
-    if x_score > 1 then
+    if compare_numbers(x_score, 'gt', 1) then
         effect.x_score = x_score
     end
 
     local blind_size = card:get_bonus_blind_size()
-    if blind_size ~= 0 then
+    if compare_numbers(blind_size, 'neq', 0) then
         effect.blind_size = blind_size
     end
 
     local x_blind_size = card:get_bonus_x_blind_size()
-    if x_blind_size > 1 then
+    if compare_numbers(x_blind_size, 'gt', 1) then
         effect.x_blind_size = x_blind_size
     end
 

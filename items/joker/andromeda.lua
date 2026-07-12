@@ -31,6 +31,17 @@ local function get_extra(card)
     return AG_UTIL.get_extra and AG_UTIL.get_extra(card) or {}
 end
 
+local function compare_numbers(left, operator, right)
+    if AG_UTIL.compare_numbers then
+        return AG_UTIL.compare_numbers(left, operator, right)
+    end
+
+    if operator == 'gt' then return left > right end
+    if operator == 'gte' then return left >= right end
+    if operator == 'lte' then return left <= right end
+    return false
+end
+
 local function is_andromeda_card(card)
     local center = card and card.config and card.config.center
     local key = center and center.key
@@ -53,7 +64,7 @@ local function apply_upgrade_gain(card, show_message)
 
     extra.xmult = math.min(get_threshold(card), get_xmult(card) + get_gain(card))
 
-    if get_xmult(card) >= get_threshold(card) then
+    if compare_numbers(get_xmult(card), 'gte', get_threshold(card)) then
         extra.supernova_ready = true
         extra.next_pulse = 0
         card:juice_up(0.3, 0.4)
@@ -160,7 +171,7 @@ local function upgrade_visible_hands(card)
 end
 
 local function grant_bonus_chips(bonus_chips)
-    if bonus_chips <= 0 then
+    if compare_numbers(bonus_chips, 'lte', 0) then
         return
     end
 
@@ -325,7 +336,7 @@ SMODS.Joker({
             return
         end
 
-        if context.joker_main and get_xmult(card) > 1 then
+        if context.joker_main and compare_numbers(get_xmult(card), 'gt', 1) then
             return {
                 Xmult_mod = get_xmult(card),
                 message = 'X' .. format_xmult(get_xmult(card)),
@@ -344,7 +355,9 @@ SMODS.Joker({
             local bonus_chips = trigger_supernova(card)
 
             return {
-                message = bonus_chips > 0 and ('+' .. number_format(bonus_chips) .. ' Chips') or 'Supernova!',
+                message = compare_numbers(bonus_chips, 'gt', 0)
+                    and ('+' .. number_format(bonus_chips) .. ' Chips')
+                    or 'Supernova!',
                 colour = G.C.ATTENTION,
             }
         end

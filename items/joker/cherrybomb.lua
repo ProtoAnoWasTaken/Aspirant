@@ -181,7 +181,7 @@ SMODS.Joker({
             }))
         end
 
-        if context.joker_main and get_chips(card) > 0 then
+        if context.joker_main and Aspirant.joker_utils.is_positive(get_chips(card)) then
             return {
                 chip_mod = get_chips(card),
                 message = "+" .. tostring(get_chips(card))

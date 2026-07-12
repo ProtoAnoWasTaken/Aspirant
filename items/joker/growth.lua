@@ -274,7 +274,7 @@ SMODS.Joker({
             return grow_chips(card, get_debuffed_discard_proc_card_count(context))
         end
 
-        if context.joker_main and card.ability.extra.chips > 0 then
+        if context.joker_main and Aspirant.joker_utils.is_positive(card.ability.extra.chips) then
             return {
                 chip_mod = card.ability.extra.chips,
                 message = '+' .. card.ability.extra.chips .. ' Chips',

@@ -115,7 +115,7 @@ SMODS.Joker({
             end
         end
 
-        if context.joker_main and get_xmult(card) > 1 then
+        if context.joker_main and Aspirant.joker_utils.compare_numbers(get_xmult(card), 'gt', 1) then
             return {
                 Xmult_mod = get_xmult(card),
                 message = 'X' .. format_xmult(get_xmult(card)),

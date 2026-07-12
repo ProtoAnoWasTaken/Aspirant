@@ -7,6 +7,14 @@ SMODS.Atlas({
 
 local AG_UTIL = (rawget(_G, 'Aspirant') or {}).joker_utils or {}
 
+local function is_positive(value)
+    if AG_UTIL.is_positive then
+        return AG_UTIL.is_positive(value)
+    end
+
+    return (value or 0) > 0
+end
+
 local function get_hands_remaining(card)
     return (card.ability and card.ability.extra and card.ability.extra.hands_remaining) or 8
 end
@@ -147,7 +155,7 @@ SMODS.Joker({
         local bonus = math.max(0, math.floor(get_round_cashout_base() * (get_cash_multiplier(card) - 1)))
         card.ability.extra.hands_used_this_round = 0
 
-        if bonus > 0 then
+        if is_positive(bonus) then
             return bonus
         end
     end,

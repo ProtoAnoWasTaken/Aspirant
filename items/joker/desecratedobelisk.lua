@@ -174,7 +174,7 @@ SMODS.Joker({
             and G.GAME
             and G.GAME.blind
             and G.GAME.blind.boss
-            and get_xmult(card) > 1
+            and Aspirant.joker_utils.compare_numbers(get_xmult(card), 'gt', 1)
         then
             card.ability.extra.xmult = 1
 
@@ -184,7 +184,7 @@ SMODS.Joker({
             }
         end
 
-        if context.joker_main and get_xmult(card) > 1 then
+        if context.joker_main and Aspirant.joker_utils.compare_numbers(get_xmult(card), 'gt', 1) then
             return {
                 Xmult_mod = get_xmult(card),
                 message = 'X' .. format_xmult(get_xmult(card)),
