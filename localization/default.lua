@@ -106,7 +106,7 @@ local loc = {
                     "{C:attention}Weithiwr Haearn{}",
                 }
             },
-            pinned_sticker = {
+            suspended_motion_sticker = {
                 name = "Suspended Motion",
                 text = {
                     "This Joker cannot be",

@@ -6,12 +6,6 @@ SMODS.Atlas({
     py = 93,
 })
 
--- Steamodded still points Pinned at an empty placeholder cell. The current
--- stickers atlas includes its artwork alongside the other base stickers.
-if SMODS.Stickers and SMODS.Stickers.pinned then
-    SMODS.Stickers.pinned.pos = { x = 2, y = 2 }
-end
-
 SMODS.Atlas({
     key = 'citron_orange',
     prefix_config = { key = false },
@@ -74,7 +68,7 @@ local function get_adjacent_targets(card)
     return valid
 end
 
-local function ensure_pinned(card)
+local function ensure_manual_movement_lock(card)
     if not card then
         return
     end
@@ -87,19 +81,14 @@ local function ensure_pinned(card)
     local drag_state = card.states and card.states.drag
 
     if extra
-        and extra.ag_pin_applied
-        and card.sticker == 'pinned'
+        and extra.ag_manual_movement_lock_applied
         and (not drag_state or drag_state.can == false)
     then
         return
     end
 
-    -- This deliberately uses the sticker artwork without native `card.pinned`:
-    -- native pinning would also prevent Citron Roller from moving itself.
-    card.pinned = false
-    card.sticker = 'pinned'
     if extra then
-        extra.ag_pin_applied = true
+        extra.ag_manual_movement_lock_applied = true
     end
 
     if drag_state then
@@ -107,19 +96,14 @@ local function ensure_pinned(card)
     end
 end
 
-local function clear_pinned(card)
+local function clear_manual_movement_lock(card)
     if not card then
         return
     end
 
-    card.pinned = false
-    if card.sticker == 'pinned' then
-        card.sticker = nil
-    end
-
     local extra = get_extra(card)
     if extra then
-        extra.ag_pin_applied = false
+        extra.ag_manual_movement_lock_applied = false
     end
 
     if card.states and card.states.drag then
@@ -234,11 +218,11 @@ end
 
 local function shared_add_to_deck(self, card, from_debuff)
     apply_variant_if_needed(card)
-    ensure_pinned(card)
+    ensure_manual_movement_lock(card)
 end
 
 local function shared_update(self, card, dt)
-    ensure_pinned(card)
+    ensure_manual_movement_lock(card)
 end
 
 local function shared_calculate(self, card, context)
@@ -251,9 +235,9 @@ local function shared_calculate(self, card, context)
             trigger = 'after',
             delay = 0,
             func = function()
-                clear_pinned(card)
+                clear_manual_movement_lock(card)
                 move_to_random_slot(card)
-                ensure_pinned(card)
+                ensure_manual_movement_lock(card)
                 return true
             end,
         }))
