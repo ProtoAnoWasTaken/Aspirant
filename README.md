@@ -7,6 +7,9 @@ This mod was fully scripted by [ProtoAno](https://github.com/ProtoAnoWasTaken) (
 > **Does this mod have any dependencies?**
 >> This mod currently requires [Steamodded](https://github.com/Steamodded/smods/), and probably will forever.
 
+> **Does this mod have any specific compatibilities?**
+>> Yes! This mod *should* be compatible with Cryptid, Balatro Multiplayer, and Cartomancer. It is also capable of self-inserting into existing Food Joker pools, primarily inspired by its first compatibility. 
+
 > **How much content is currently in the mod?**
 >> As of v1.1, ASPIRANT has 50 jokers, 6 vouchers, 5 boss blinds, 3 decks, 1 spectral card, 4 challenges, and 1 seal. It also features 10 achievements for those of you who don't press the Unlock All button, and a "Creative Mode" deck that can be enabled in the config.
 
