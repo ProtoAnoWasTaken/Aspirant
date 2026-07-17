@@ -34,6 +34,18 @@ local function get_suit_penalty(card)
     return extra and extra.suit_penalty or 1
 end
 
+local function count_destroyed_by_card(context, card)
+    if AG_UTIL.install_destroy_source_hooks then
+        AG_UTIL.install_destroy_source_hooks()
+    end
+
+    if AG_UTIL.count_cards_destroyed_by_card then
+        return AG_UTIL.count_cards_destroyed_by_card(context, card)
+    end
+
+    return 0
+end
+
 local function get_played_cards(context)
     local c = context and (context.other_context or context)
     if c and c.full_hand then
@@ -151,13 +163,13 @@ SMODS.Joker({
         if not extra then return end
         local gain = extra.gain or 10
 
+        local destroyed_count = count_destroyed_by_card(context, card)
         local self_destructs = AG_UTIL.count_self_destructs and AG_UTIL.count_self_destructs(context, card) or 0
+        local created_count = context.ag_lemurian_created_card and context.source_card ~= card and 1 or 0
+        local trigger_count = destroyed_count + self_destructs + created_count
 
-        if context.ag_lemurian_destroyed_card
-            or context.ag_lemurian_created_card
-            or self_destructs > 0
-        then
-            local gained_mult = self_destructs > 0 and (gain * self_destructs) or gain
+        if trigger_count > 0 then
+            local gained_mult = gain * trigger_count
             extra.mult = (extra.mult or 0) + gained_mult
             return {
                 message = '+' .. tostring(gained_mult) .. ' Mult',
