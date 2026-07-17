@@ -49,7 +49,9 @@ local function discard_random_hand_card()
     local target = pseudorandom_element(G.hand.cards, pseudoseed('ag_hyperalgesia_discard'))
 
     if target then
-        draw_card(G.hand, G.discard, 100, 'down', false, target, 0.07)
+        G.hand:unhighlight_all()
+        G.hand:add_to_highlighted(target, true)
+        G.FUNCS.discard_cards_from_highlighted(nil, true)
     end
 end
 

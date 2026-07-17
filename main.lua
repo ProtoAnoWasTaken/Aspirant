@@ -672,7 +672,7 @@ function AG.test_deck.try_summon(source_card)
         return ag_spawn_tag(source_card)
     end
 
-    if (center and center.set == "Blind") or ag_find_boss_blind_center(source_card) then
+    if center and center.set == "Blind" then
         return ag_set_boss_blind(source_card)
     end
 
@@ -686,6 +686,10 @@ function AG.test_deck.try_summon(source_card)
 
     if source_card.ability and source_card.ability.consumeable then
         return ag_spawn_consumable(source_card)
+    end
+
+    if ag_find_boss_blind_center(source_card) then
+        return ag_set_boss_blind(source_card)
     end
 
     if center and center.set == "Edition" then
