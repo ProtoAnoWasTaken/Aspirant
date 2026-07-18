@@ -39,13 +39,15 @@ end
 
 local function destroy(card)
     if AG_UTIL.destroy_card then
-        AG_UTIL.destroy_card(card, {
+        return AG_UTIL.destroy_card(card, {
             colours = { G.C.RED },
             delay = 0,
             self_destruct = true,
             source_card = card,
         })
     end
+
+    return false
 end
 
 SMODS.Joker({
@@ -182,14 +184,12 @@ SMODS.Joker({
             if not e then return end
 
             if e.hands_kept >= e.delay then
-                if not card.protected_from_destruct then
-                    card:juice_up(0.8, 0.5)
-                    destroy(card)
-                else
+                card:juice_up(0.8, 0.5)
+
+                if not destroy(card) then
                     if Aspirant and Aspirant.unlock_stunted then
                         Aspirant.unlock_stunted()
                     end
-                    card.protected_from_destruct = nil
                 end
 
                 return {

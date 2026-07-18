@@ -391,6 +391,14 @@ function AG_UTIL.destroy_card(card, opts)
         self_destruct = opts.source_card ~= nil and opts.source_card == card
     end
 
+    if self_destruct
+        and not opts.ignore_protective_beam
+        and AG_UTIL.consume_protective_beam
+        and AG_UTIL.consume_protective_beam(card)
+    then
+        return false
+    end
+
     card.ag_destroy_reported_by_aspirant = true
     if self_destruct then
         card.ag_self_destruct_reported = true
@@ -466,7 +474,6 @@ function AG_UTIL.consume_protective_beam(card)
             and not adjacent_joker.getting_sliced
             and AG_UTIL.center_matches(center, 'protectivebeam')
         then
-            card.protected_from_destruct = true
             adjacent_joker:juice_up(0.8, 0.5)
             play_sound('glass' .. math.random(1, 6), math.random() * 0.2 + 0.9, 0.5)
             AG_UTIL.destroy_card(adjacent_joker, {
@@ -474,8 +481,8 @@ function AG_UTIL.consume_protective_beam(card)
                 delay = 0,
                 self_destruct = true,
                 source_card = adjacent_joker,
+                ignore_protective_beam = true,
             })
-            card.protected_from_destruct = nil
             return true
         end
     end
