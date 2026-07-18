@@ -53,6 +53,17 @@ local function get_food_rarety_rounds(joker)
     return (Aspirant and Aspirant.food and Aspirant.food.scale_value) and Aspirant.food.scale_value(joker, 1) or 1
 end
 
+local function is_food_joker(joker)
+    local center = joker and joker.config and joker.config.center
+
+    if center and center.pools and center.pools.Food == true then
+        return true
+    end
+
+    local food = Aspirant and Aspirant.food
+    return food and food.is_food_subject and food.is_food_subject(joker) or false
+end
+
 local function get_consumable_food_targets(source_card)
     local jokers = {}
 
@@ -65,8 +76,7 @@ local function get_consumable_food_targets(source_card)
             and not joker.removed
             and not joker.getting_sliced
             and not (joker.ability and joker.ability.eternal)
-            and joker.is_food
-            and joker:is_food()
+            and is_food_joker(joker)
         then
             jokers[#jokers + 1] = joker
         end
