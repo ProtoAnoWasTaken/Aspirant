@@ -24,8 +24,7 @@ local function get_xmult(card)
 end
 
 local function get_gain(card)
-    local gain = (card.ability and card.ability.extra and card.ability.extra.gain) or 0.5
-    return (Aspirant and Aspirant.food and Aspirant.food.scale_value) and Aspirant.food.scale_value(card, gain) or gain
+    return (card.ability and card.ability.extra and card.ability.extra.gain) or 0.5
 end
 
 local function get_rounds(card)

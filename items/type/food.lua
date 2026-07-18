@@ -197,6 +197,17 @@ function AG_FOOD.is_food_subject(subject)
     return AG_FOOD.is_food_center(center)
 end
 
+function AG_FOOD.is_drommo_subject(subject)
+    local center = subject and subject.config and subject.config.center or subject
+    if not center then
+        return false
+    end
+
+    return center.original_key == "drommo"
+        or center.key == "drommo"
+        or (type(center.key) == "string" and center.key:match("drommo$") ~= nil)
+end
+
 function AG_FOOD.get_drommo_count()
     if not G or not G.jokers or not G.jokers.cards then
         return 0
@@ -205,16 +216,11 @@ function AG_FOOD.get_drommo_count()
     local count = 0
 
     for _, joker in ipairs(G.jokers.cards) do
-        local center = joker and joker.config and joker.config.center
         if joker
+            and joker.added_to_deck
             and not joker.debuff
             and not joker.getting_sliced
-            and center
-            and (
-                center.original_key == "drommo"
-                or center.key == "drommo"
-                or (type(center.key) == "string" and center.key:match("drommo$") ~= nil)
-            )
+            and AG_FOOD.is_drommo_subject(joker)
         then
             count = count + 1
         end
@@ -249,10 +255,41 @@ local function ag_scale_food_instance_values(target, config, multiplier)
 
     for key, value in pairs(config) do
         if type(value) == "number" and type(target[key]) == "number" then
-            target[key] = value * multiplier
+            target[key] = target[key] * multiplier
         elseif type(value) == "table" and type(target[key]) == "table" then
             ag_scale_food_instance_values(target[key], value, multiplier)
         end
+    end
+end
+
+function AG_FOOD.sync_card_values(card)
+    if not card or not card.ability or not AG_FOOD.is_food_subject(card) then
+        return
+    end
+
+    local center = card.config and card.config.center
+    local config = center and center.config
+    if type(config) ~= "table" then
+        return
+    end
+
+    local applied_multiplier = card.ability.ag_food_value_multiplier or 1
+    local current_multiplier = AG_FOOD.get_value_multiplier(card)
+    if applied_multiplier == current_multiplier then
+        return
+    end
+
+    ag_scale_food_instance_values(card.ability, config, current_multiplier / applied_multiplier)
+    card.ability.ag_food_value_multiplier = current_multiplier
+end
+
+function AG_FOOD.sync_drommo_values()
+    if not G or not G.jokers or not G.jokers.cards then
+        return
+    end
+
+    for _, joker in ipairs(G.jokers.cards) do
+        AG_FOOD.sync_card_values(joker)
     end
 end
 
@@ -261,15 +298,45 @@ if not AG_FOOD.original_card_set_ability then
 
     function Card:set_ability(center, initial, delay_sprites)
         AG_FOOD.original_card_set_ability(self, center, initial, delay_sprites)
+        AG_FOOD.sync_card_values(self)
+    end
+end
 
-        local resolved_center = center
-        if type(resolved_center) == "string" and G and G.P_CENTERS then
-            resolved_center = G.P_CENTERS[resolved_center]
+if Card.set_debuff and not AG_FOOD.original_card_set_debuff then
+    AG_FOOD.original_card_set_debuff = Card.set_debuff
+
+    function Card:set_debuff(should_debuff)
+        local is_drommo = AG_FOOD.is_drommo_subject(self)
+        local results = { AG_FOOD.original_card_set_debuff(self, should_debuff) }
+
+        if is_drommo then
+            AG_FOOD.sync_drommo_values()
         end
 
-        if initial and resolved_center and AG_FOOD.is_food_center(resolved_center) and self and self.ability then
-            ag_scale_food_instance_values(self.ability, resolved_center.config, AG_FOOD.get_value_multiplier(resolved_center))
+        return unpack(results)
+    end
+end
+
+if Card.start_dissolve and not AG_FOOD.original_card_start_dissolve then
+    AG_FOOD.original_card_start_dissolve = Card.start_dissolve
+
+    function Card:start_dissolve(dissolve_colours, silent, dissolve_time_fac, no_juice)
+        local is_drommo = AG_FOOD.is_drommo_subject(self)
+        local results = {
+            AG_FOOD.original_card_start_dissolve(
+                self,
+                dissolve_colours,
+                silent,
+                dissolve_time_fac,
+                no_juice
+            )
+        }
+
+        if is_drommo then
+            AG_FOOD.sync_drommo_values()
         end
+
+        return unpack(results)
     end
 end
 

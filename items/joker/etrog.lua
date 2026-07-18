@@ -20,8 +20,7 @@ local function get_hands_remaining(card)
 end
 
 local function get_cash_multiplier(card)
-    local multiplier = (card.ability and card.ability.extra and card.ability.extra.cash_multiplier) or 2
-    return (Aspirant and Aspirant.food and Aspirant.food.scale_value) and Aspirant.food.scale_value(card, multiplier) or multiplier
+    return (card.ability and card.ability.extra and card.ability.extra.cash_multiplier) or 2
 end
 
 local function get_hands_used_this_round(card)

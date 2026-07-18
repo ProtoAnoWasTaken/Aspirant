@@ -57,6 +57,27 @@ local function is_primary_drommo(card)
     return true
 end
 
+local function sync_drommo_values()
+    if Aspirant and Aspirant.food and Aspirant.food.sync_drommo_values then
+        Aspirant.food.sync_drommo_values()
+    end
+end
+
+local function queue_drommo_sync()
+    if G and G.E_MANAGER and Event then
+        G.E_MANAGER:add_event(Event({
+            trigger = "after",
+            func = function()
+                sync_drommo_values()
+                return true
+            end,
+        }))
+        return
+    end
+
+    sync_drommo_values()
+end
+
 SMODS.Joker({
     key = "drommo",
     atlas = "drommo",
@@ -90,6 +111,14 @@ SMODS.Joker({
     blueprint_compat = true,
     eternal_compat = true,
     perishable_compat = true,
+
+    add_to_deck = function(self, card)
+        queue_drommo_sync()
+    end,
+
+    remove_from_deck = function(self, card)
+        sync_drommo_values()
+    end,
 
     calculate = function(self, card, context)
         if context.blueprint then
