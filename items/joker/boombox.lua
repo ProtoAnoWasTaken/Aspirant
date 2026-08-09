@@ -175,6 +175,7 @@ SMODS.Joker({
             "Resets {C:mult}Mult{} after {C:attention}2{} hands",
             "do not follow the streak",
             "{C:inactive}(Currently {X:mult,C:white}X#1#{}{C:inactive}){}",
+            "{C:inactive}(Current Hand: {C:attention}#3#{}{C:inactive}){}",
         }
     },
 
@@ -183,6 +184,7 @@ SMODS.Joker({
             vars = {
                 format_xmult(get_xmult(card)),
                 format_xmult(get_gain(card)),
+                (card.ability and card.ability.extra and card.ability.extra.streak_hand) or 'None',
             }
         }
     end,

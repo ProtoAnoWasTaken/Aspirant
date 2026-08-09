@@ -64,13 +64,6 @@ local loc = {
                     "{C:attention}Cherry Bomb{} {C:red,E:2}self destruct{}",
                 }
             },
-            ag_proposed_card = {
-                name = "Proposed Card",
-                text = {
-                    "This card was proposed by",
-                    "{C:red}#1#{}",
-                }
-            },
             ag_unlock_achievement_champion_acolyte = {
                 name = "Locked",
                 text = {
@@ -90,13 +83,6 @@ local loc = {
                 text = {
                     "Unlock by earning",
                     "{C:attention}Sunken Below{}",
-                }
-            },
-            ag_unlock_timebuilder_deck = {
-                name = "Locked",
-                unlock = {
-                    "Unlock by discovering",
-                    "{C:attention}Starlight Obelisk{}",
                 }
             },
             ag_unlock_lemurian_deck = {
@@ -127,21 +113,6 @@ local loc = {
             }
         },
         Back = {
-            b_tk9g_timebuilder_deck = {
-                name = "Timebuilder's Deck",
-                text = {
-                    "{C:red}-1{} hand",
-                    "Start with a {C:spectral}Cryptid{} card",
-                    "{C:attention}5{} cards in deck have a",
-                    "{C:starlight,T:starlight_seal}Starlight Seal{}",
-                    "Defeating a {C:attention}Boss Blind{}",
-                    "adds {C:attention}2{} more Seals",
-                },
-                unlock = {
-                    "Unlock by discovering",
-                    "{C:attention}Starlight Obelisk{}",
-                }
-            },
             b_tk9g_lemurian_deck = {
                 name = "Lemurian Deck",
                 text = {
@@ -152,13 +123,6 @@ local loc = {
                 unlock = {
                     "Unlock by discovering",
                     "{C:attention}Weithiwr Haearn{}",
-                }
-            },
-            ag_unlock_timebuilder_deck = {
-                name = "Locked",
-                unlock = {
-                    "Unlock by discovering",
-                    "{C:attention}Starlight Obelisk{}",
                 }
             },
             ag_unlock_lemurian_deck = {

@@ -234,11 +234,6 @@ SMODS.Joker({
     },
 
     loc_vars = function(self, info_queue, card)
-        info_queue[#info_queue + 1] = {
-            key = 'ag_proposed_card',
-            set = 'Other',
-            vars = { 'v_ordhosbn' },
-        }
         return { vars = {} }
     end,
 

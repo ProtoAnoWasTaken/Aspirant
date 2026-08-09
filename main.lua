@@ -467,6 +467,11 @@ local function ag_find_boss_blind_center(source_card)
         return direct_center
     end
 
+    local collection_blind = source_card and source_card.config and source_card.config.blind
+    if ag_center_looks_like_blind(collection_blind) and collection_blind.boss then
+        return collection_blind
+    end
+
     for _, pool in ipairs(ag_blind_pools()) do
         for _, center in pairs(pool or {}) do
             if ag_center_looks_like_blind(center) and center.boss then
@@ -1016,10 +1021,6 @@ local function ag_recheck_unlocks()
 
     if AG.lemurian_deck and AG.lemurian_deck.sync_unlock_state then
         AG.lemurian_deck.sync_unlock_state()
-    end
-
-    if AG.timebuilder_deck and AG.timebuilder_deck.sync_unlock_state then
-        AG.timebuilder_deck.sync_unlock_state()
     end
 
     ag_normalize_collection_order()

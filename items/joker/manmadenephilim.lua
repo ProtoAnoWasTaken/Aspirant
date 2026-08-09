@@ -128,12 +128,6 @@ SMODS.Joker({
         local current_retriggers = get_retriggers(card)
         local extra = get_extra(card)
 
-        info_queue[#info_queue + 1] = {
-            key = 'ag_proposed_card',
-            set = 'Other',
-            vars = { 'v_ordhosbn' },
-        }
-
         return {
             vars = {
                 (extra and extra.mult) or 0,
